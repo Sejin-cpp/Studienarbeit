@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import * as Colyseus from 'colyseus.js'
-export default class HelloWorldScene extends Phaser.Scene
+export default class GaigelMode1 extends Phaser.Scene
 {
     private client!: Colyseus.Client
 
