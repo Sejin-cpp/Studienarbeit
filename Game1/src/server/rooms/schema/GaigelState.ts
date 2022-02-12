@@ -1,7 +1,10 @@
 import { Schema, type, ArraySchema } from '@colyseus/schema'
-//import CardDraggable from '~/client/gameObjects/CardDraggable.js'
+import CardDraggable from '../../../gameObjects/CardDraggable'
 
-class CardState extends Schema
+//import CardDraggable  from  '~/client/gameObjects/CardDraggable.js'
+
+
+/*class CardState extends Schema
 {
   @type('string')
   farbe : string
@@ -16,23 +19,32 @@ class CardState extends Schema
     this.art = art
   }
 }
-
+*/
 class PlayerState extends Schema 
 {
   @type('string')
   id : string  
   
-  @type([CardState])
-  cardsInHand: CardState[]
+  cardsInHand: CardDraggable[]
 
-  @type([CardState])
-  cardsInStich: CardState[]
+  cardsWon: CardDraggable[]
   constructor(id : string)
   {
     super()
     this.id = id
-    this.cardsInHand = new ArraySchema<CardState>()
-    this.cardsInStich = new ArraySchema<CardState>()
+    this.cardsInHand = new Array <CardDraggable>()
+    this.cardsWon = new Array <CardDraggable>()
+  }
+  addCardInHand(card: CardDraggable){
+    this.cardsInHand.push(card)
+  }
+
+  addCardWon(card: CardDraggable){
+    this.cardsWon.push(card)
+  }
+
+  removeCardFromHand(){
+
   }
 }
 
@@ -41,19 +53,24 @@ export class GaigelState extends Schema
 
   @type([PlayerState])
   playerstates: PlayerState[]
-  @type([CardState])
-  cardsInDeck: CardState[]
+
+  cardsInDeck: CardDraggable[]
 
   constructor()
   {
     super()
 
     this.playerstates = new ArraySchema<PlayerState>()
-    this.cardsInDeck = new ArraySchema<CardState>()
+    this.cardsInDeck = new  Array <CardDraggable>()
   }
   addPlayer(id : string)
   {
     this.playerstates.push(new PlayerState(id))
+  }
+
+  setCardsInDeck(cardsInDeck : CardDraggable[])
+  {
+    this.cardsInDeck = cardsInDeck
   }
 
 }

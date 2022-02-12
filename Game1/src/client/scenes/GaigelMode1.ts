@@ -1,13 +1,15 @@
 import Phaser from 'phaser'
 import * as Colyseus from 'colyseus.js'
 import { GaigelState } from '~/server/rooms/schema/GaigelState'
+import CardDraggable from '../../gameObjects/CardDraggable'
 export default class GaigelMode1 extends Phaser.Scene
 {
     private client!: Colyseus.Client
-
+    private cards : CardDraggable[]
 	constructor()
 	{
 		super('hello-world')
+        this.cards = new Array<CardDraggable>()
 	}
 
     init()
@@ -33,6 +35,20 @@ export default class GaigelMode1 extends Phaser.Scene
        room.onStateChange(state => {
            console.dir(state)
        })
+       this.cards.push(new CardDraggable({
+        scene: this,
+        name: 'HerzAss',
+        x:200,
+        y:200,
+        card: 'card',
+        depth: 1,
+        ondragend: (pointer,gameObject) => {},
+        width: 50,
+        height: 100
+       }))
+
+       room.state.setCardsInDeck(this.cards)
+        
        /*
        room.onMessage('keydown',(message) => {
            console.log(message)
