@@ -1,10 +1,10 @@
 import { Room, Client } from "colyseus"
-import { MyRoomState } from "./schema/MyRoomState"
+import { GaigelState } from "./schema/GaigelState"
 
-export class MyRoom extends Room<MyRoomState> {
+export class GaigelRoom extends Room<GaigelState> {
 
   onCreate (options: any) {
-    this.setState(new MyRoomState());
+    this.setState(new GaigelState());
 
     this.onMessage("keydown", (client, message) => {
       this.broadcast('keydown', message, {
