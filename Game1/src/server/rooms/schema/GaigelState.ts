@@ -1,4 +1,5 @@
 import { Schema, type, ArraySchema } from '@colyseus/schema'
+//import CardDraggable from '~/client/gameObjects/CardDraggable.js'
 
 class CardState extends Schema
 {
@@ -40,11 +41,15 @@ export class GaigelState extends Schema
 
   @type([PlayerState])
   playerstates: PlayerState[]
+  @type([CardState])
+  cardsInDeck: CardState[]
+
   constructor()
   {
     super()
 
     this.playerstates = new ArraySchema<PlayerState>()
+    this.cardsInDeck = new ArraySchema<CardState>()
   }
   addPlayer(id : string)
   {
