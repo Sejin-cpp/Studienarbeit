@@ -37,11 +37,13 @@ export default class GaigelMode1 extends Phaser.Scene
        })
        this.cards.push(new CardDraggable({
         scene: this,
-        name: 'HerzAss',
         x:200,
         y:200,
-        card: 'card',
+        cardname: 'eichel7',
         depth: 1,
+        color : "eichel",
+        symbol : "sieben",
+        value : 0,
         ondragend: (pointer,gameObject) => {},
         width: 50,
         height: 100
