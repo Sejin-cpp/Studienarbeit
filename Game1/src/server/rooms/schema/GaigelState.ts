@@ -46,5 +46,9 @@ export class GaigelState extends Schema
 
     this.playerstates = new ArraySchema<PlayerState>()
   }
+  addPlayer(id : string)
+  {
+    this.playerstates.push(new PlayerState(id))
+  }
 
 }

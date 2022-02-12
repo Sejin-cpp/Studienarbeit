@@ -4,8 +4,8 @@ import GaigelMode1 from './scenes/GaigelMode1'
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
-	width: 600,
-	height: 600,
+	width: 1920,
+	height: 1200,
 	physics: {
 		default: 'arcade',
 		arcade: {
