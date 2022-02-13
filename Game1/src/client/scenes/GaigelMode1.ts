@@ -52,7 +52,7 @@ export default class GaigelMode1 extends Phaser.Scene
 
     async create()
     {
-       this.input.mouse.disableContextMenu();
+       //this.input.mouse.disableContextMenu();
        const room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(room.sessionId)
