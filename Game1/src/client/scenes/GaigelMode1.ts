@@ -73,6 +73,9 @@ export default class GaigelMode1 extends Phaser.Scene
        this.room.onStateChange.once(state => {
            console.dir(state)
            this.createCardObjects();
+           this.cards.forEach(element => {
+                element.setScale(0.5);
+           });
            this.room.state.setCardsInDeck(this.cards)
        })
         

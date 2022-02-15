@@ -1,11 +1,12 @@
 import Phaser from 'phaser'
 export default class CardBase extends Phaser.GameObjects.Sprite{
     constructor(data){
-        let {scene,x,y,cardname,depth,color,symbol,value,cardback} = data;
+        let {scene,x,y,cardname,depth,color,symbol,value,cardback, scale} = data;
         super(scene,x,y,"");
-        this.cardname = cardname
-        this.cardback = cardback
-        this.setTexture(cardback)
+        this.cardname = cardname;
+        this.scale = scale;
+        this.cardback = cardback;
+        this.setTexture(cardback);
         this.image = cardback;
         this.depth = depth;
         this.scene = scene;
