@@ -12,6 +12,7 @@ export default class GaigelMode1 extends Phaser.Scene
     private cards : CardDraggable[]
     private stateMachine! : StateMachine
     private room!: Colyseus.Room<GaigelState>
+    private tempCard!:  CardDraggable
 	constructor()
 	{
 		super('hello-world')
@@ -90,12 +91,16 @@ export default class GaigelMode1 extends Phaser.Scene
 
        //Card Movement
 
+       this.input.on('dragstart',(pointer,gameObject) =>{
+            this.stateMachine.setState('cardMove')
+            this.tempCard = gameObject
+        })
+
         this.input.on('drag',(pointer,gameObject,dragX,dragY) =>{
             if(!gameObject.draggable) return;
             gameObject.dragging = true;
             gameObject.x = dragX;
             gameObject.y = dragY;
-            this.stateMachine.setState('cardMove')
 
         })
         
@@ -107,11 +112,11 @@ export default class GaigelMode1 extends Phaser.Scene
     
 
     private cardMoveEnter(){
-        this.room.send(ClientMessage.CardMove)
+        this.room.send(ClientMessage.CardMove,"StartDrag")
     }
 
     private cardMoveUpdate(){
-        
+        this.room.send(ClientMessage.CardMove, {x: this.tempCard.x, y: this.tempCard.y})
     }
 
     createCardObjects(){

@@ -1,8 +1,6 @@
 import { Schema, type, ArraySchema } from '@colyseus/schema'
 import CardDraggable from '../../../gameObjects/CardDraggable'
 
-//import CardDraggable  from  '~/client/gameObjects/CardDraggable.js'
-
 
 /*class CardState extends Schema
 {

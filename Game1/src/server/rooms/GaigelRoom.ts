@@ -14,7 +14,7 @@ export class GaigelRoom extends Room<GaigelState> {
     });
 
     this.onMessage(ClientMessage.CardMove, (client, message) => {
-      
+        console.log(message)
     });
 
   }
