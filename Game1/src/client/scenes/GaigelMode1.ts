@@ -1,11 +1,17 @@
 import Phaser from 'phaser'
 import * as Colyseus from 'colyseus.js'
-import { GaigelState } from '~/server/rooms/schema/GaigelState'
+import { GaigelState } from '../../server/rooms/schema/GaigelState'
 import CardDraggable from '../../gameObjects/CardDraggable'
+import StateMachine from '../../statemachine/StateMachine'
+import {ClientMessage} from '../../types/ClientMessage'
+
+
 export default class GaigelMode1 extends Phaser.Scene
 {
     private client!: Colyseus.Client
     private cards : CardDraggable[]
+    private stateMachine! : StateMachine
+    private room!: Colyseus.Room<GaigelState>
 	constructor()
 	{
 		super('hello-world')
@@ -15,6 +21,13 @@ export default class GaigelMode1 extends Phaser.Scene
     init()
     {
         this.client = new Colyseus.Client('ws://localhost:2567')
+        this.stateMachine = new StateMachine(this, 'game')
+        this.stateMachine.addState('idle')
+            .addState('cardMove', {
+                onEnter: this.cardMoveEnter,
+                onUpdate: this.cardMoveUpdate
+            })
+            .setState('idle')
     }
 
 	preload()
@@ -53,14 +66,14 @@ export default class GaigelMode1 extends Phaser.Scene
     async create()
     {
        //this.input.mouse.disableContextMenu();
-       const room = await this.client.joinOrCreate<GaigelState>('my_room')
+       this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
-       console.log(room.sessionId)
+       console.log(this.room.sessionId)
        
-       room.onStateChange.once(state => {
+       this.room.onStateChange.once(state => {
            console.dir(state)
            this.createCardObjects();
-           room.state.setCardsInDeck(this.cards)
+           this.room.state.setCardsInDeck(this.cards)
        })
         
        /*
@@ -71,6 +84,31 @@ export default class GaigelMode1 extends Phaser.Scene
            room.send('keydown',evt.key)
        })
        */
+
+       //Card Movement
+
+        this.input.on('drag',(pointer,gameObject,dragX,dragY) =>{
+            if(!gameObject.draggable) return;
+            gameObject.dragging = true;
+            gameObject.x = dragX;
+            gameObject.y = dragY;
+            this.stateMachine.setState('cardMove')
+
+        })
+        
+        this.input.on('dragend',(pointer,gameObject) =>{
+            this.stateMachine.setState('idle')
+        })
+        
+    }
+    
+
+    private cardMoveEnter(){
+        this.room.send(ClientMessage.CardMove)
+    }
+
+    private cardMoveUpdate(){
+        
     }
 
     createCardObjects(){
@@ -369,5 +407,10 @@ export default class GaigelMode1 extends Phaser.Scene
                 //height: 100
             }))
         }
+    }
+
+    update(t: number, dt: number)
+    {
+        this.stateMachine.update(dt)
     }
 }

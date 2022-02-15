@@ -5,7 +5,7 @@ interface StateConfig
     onUpdate?:(dt: number) => void
     onExit?: () => void
 }
-export default class NewStateMachine
+export default class StateMachine
 {   
     private context? : any
     private states = new Map<string,StateConfig>()
@@ -31,13 +31,13 @@ export default class NewStateMachine
         return this.currentState.name === name
     }
 
-    addState(name : string, config: StateConfig )
+    addState(name : string, config?: StateConfig )
     {
         this.states.set(name,{
             name,
-            onEnter: config.onEnter?.bind(this.context),
-            onUpdate: config.onUpdate?.bind(this.context),
-            onExit: config.onEnter?.bind(this.context)
+            onEnter: config?.onEnter?.bind(this.context),
+            onUpdate: config?.onUpdate?.bind(this.context),
+            onExit: config?.onEnter?.bind(this.context)
         })
 
         return this
@@ -50,7 +50,7 @@ export default class NewStateMachine
             return
         }
 
-        if(!this.isSwitchingState)
+        if(this.isSwitchingState)
         {
             this.stateQueue.push(name)
             return

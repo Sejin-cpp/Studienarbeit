@@ -16,18 +16,8 @@ export default class CardDraggable extends CardBase{
         this.setInteractive();
         this.scene.input.setDraggable(this);
 
-        this.scene.input.on('drag',(pointer,gameObject,dragX,dragY) =>{
-            if(!this.draggable) return;
-            this.dragging = true;
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-            
-        });
+     
         
-        this.scene.input.on('dragend',(pointer,gameObject) =>{
-            this.dragging = false;
-            gameObject.ondragend(pointer, gameObject);
-        });
         
         this.on('pointerdown', (pointer,gameObject) =>{
             

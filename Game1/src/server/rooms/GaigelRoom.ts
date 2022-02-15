@@ -1,5 +1,6 @@
 import { Room, Client } from "colyseus"
 import { GaigelState } from "./schema/GaigelState"
+import {ClientMessage} from '../../types/ClientMessage'
 
 export class GaigelRoom extends Room<GaigelState> {
 
@@ -10,6 +11,10 @@ export class GaigelRoom extends Room<GaigelState> {
       this.broadcast('keydown', message, {
           except: client
       })
+    });
+
+    this.onMessage(ClientMessage.CardMove, (client, message) => {
+      
     });
 
   }
