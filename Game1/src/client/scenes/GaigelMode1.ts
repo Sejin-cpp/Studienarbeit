@@ -72,10 +72,13 @@ export default class GaigelMode1 extends Phaser.Scene
        console.log(this.room.sessionId)
        
        this.room.onStateChange.once(state => {
+           var id = 0;
            console.dir(state)
            this.createCardObjects();
            this.cards.forEach(element => {
                 element.setScale(0.5);
+                element.id = id;
+                id++;
            });
            this.room.state.setCardsInDeck(this.cards)
        })
@@ -116,7 +119,7 @@ export default class GaigelMode1 extends Phaser.Scene
     }
 
     private cardMoveUpdate(){
-        this.room.send(ClientMessage.CardMove, {x: this.tempCard.x, y: this.tempCard.y})
+        this.room.send(ClientMessage.CardMove, {id:this.tempCard.id,x: this.tempCard.x, y: this.tempCard.y})
     }
 
     createCardObjects(){

@@ -1,8 +1,9 @@
 import Phaser from 'phaser'
 export default class CardBase extends Phaser.GameObjects.Sprite{
     constructor(data){
-        let {scene,x,y,cardname,depth,color,symbol,value,cardback, scale} = data;
+        let {id,scene,x,y,cardname,depth,color,symbol,value,cardback, scale} = data;
         super(scene,x,y,"");
+        this.id = id;
         this.cardname = cardname;
         this.scale = scale;
         this.cardback = cardback;
