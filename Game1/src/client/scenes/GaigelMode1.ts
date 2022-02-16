@@ -107,7 +107,6 @@ export default class GaigelMode1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
-            console.log(message)
             this.cards.forEach(element => {
                 if(message.id == element.id){
                     element.x = message.card.x

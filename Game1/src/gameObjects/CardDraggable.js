@@ -37,13 +37,13 @@ export default class CardDraggable extends CardBase{
        timeline.add({
             targets: this,
             scale: this.scale+0.1,
-            duration: 300
+            duration: 200
        });
 
        timeline.add({
             targets: this,
             scaleX: 0,
-            duration: 300,
+            duration: 200,
             delay: 200,
             onComplete: () =>{
                 if(this.hidden == true)
@@ -61,13 +61,13 @@ export default class CardDraggable extends CardBase{
        timeline.add({
             targets: this,
             scaleX: this.scale+0.1,
-            duration: 300,
+            duration: 200,
         });
 
         timeline.add({
             targets: this,
             scale: this.scale,
-            duration: 300
+            duration: 200
        });
        timeline.play();
     }

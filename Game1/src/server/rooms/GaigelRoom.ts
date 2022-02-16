@@ -14,12 +14,16 @@ export class GaigelRoom extends Room<GaigelState> {
     });
 
     this.onMessage(ClientMessage.CardMove, (client, message) => {
-      console.log("Received")
-      console.log(client.sessionId)
         this.broadcast(ClientMessage.CardMove,message, {
           except: client
       })
     });
+
+    this.onMessage(ClientMessage.CardFlip, (client, message) => {
+      this.broadcast(ClientMessage.CardFlip,message, {
+        except: client
+    })
+  });
 
   }
 
