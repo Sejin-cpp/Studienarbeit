@@ -14,6 +14,8 @@ export class GaigelRoom extends Room<GaigelState> {
     });
 
     this.onMessage(ClientMessage.CardMove, (client, message) => {
+      console.log("Received")
+      console.log(client.sessionId)
         this.broadcast(ClientMessage.CardMove,message, {
           except: client
       })

@@ -15,7 +15,7 @@ export default class CardDraggable extends CardBase{
         this.setSize(this.image.width, this.image.height),
         this.setInteractive();
         this.scene.input.setDraggable(this);
-
+        /*
         this.on('pointerdown', (pointer,gameObject) =>{
             
             if (pointer.rightButtonDown())
@@ -23,6 +23,7 @@ export default class CardDraggable extends CardBase{
                 this.flip()
             }
         });
+        */
         
     }
 

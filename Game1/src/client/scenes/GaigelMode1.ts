@@ -70,29 +70,24 @@ export default class GaigelMode1 extends Phaser.Scene
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
-       
-       this.room.onStateChange.once(state => {
-           var id = 0;
+       this.createCardObjects();
+       var id = 0;
+       this.cards.forEach(element => {
+        element.setScale(0.5);
+        element.on('pointerdown', (pointer,gameObject) =>{
+            if (pointer.rightButtonDown())
+            {
+                this.room.send(ClientMessage.CardFlip,{id: element.id})
+                element.flip()
+            }
+        });
+        element.id = id;
+        id++;
+        });
+       this.room.onStateChange.once(state => { 
            console.dir(state)
-           this.createCardObjects();
-           this.cards.forEach(element => {
-                element.setScale(0.5);
-                element.id = id;
-                id++;
-           });
            this.room.state.setCardsInDeck(this.cards)
        })
-        
-       /*
-       room.onMessage('keydown',(message) => {
-           console.log(message)
-       })
-       this.input.keyboard.on('keydown',(evt : KeyboardEvent) =>{
-           room.send('keydown',evt.key)
-       })
-       */
-
-       //Card Movement
 
        this.input.on('dragstart',(pointer,gameObject) =>{
             this.stateMachine.setState('cardMove')
@@ -120,11 +115,20 @@ export default class GaigelMode1 extends Phaser.Scene
                 }
            });
         })
+
+        this.room.onMessage(ClientMessage.CardFlip,(message) =>{
+            this.cards.forEach(element => {
+                if(message.id == element.id){
+                    element.flip()
+                }
+           });
+        })
         
     }
     
 
     private cardMoveEnter(){
+        console.log("drag")
         this.room.send(ClientMessage.CardMove,"StartDrag")
     }
 
