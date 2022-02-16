@@ -66,7 +66,7 @@ export default class GaigelMode1 extends Phaser.Scene
 
     async create()
     {
-       //this.input.mouse.disableContextMenu();
+       this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
@@ -208,6 +208,20 @@ export default class GaigelMode1 extends Phaser.Scene
                 //width: 50,
                 //height: 100
             }))
+            this.cards.push(new CardDraggable({
+                scene: this,
+                x:200,
+                y:200,
+                cardname: 'eichelAss',
+                depth: 1,
+                color : "eichel",
+                symbol : "ass",
+                value : 11,
+                cardback: 'cardback',
+                ondragend: (pointer,gameObject) => {},
+                //width: 50,
+                //height: 100
+            }))
         }
 
         //Blatt Karten*2
@@ -277,6 +291,20 @@ export default class GaigelMode1 extends Phaser.Scene
                 color : "blatt",
                 symbol : "koenig",
                 value : 4,
+                cardback: 'cardback',
+                ondragend: (pointer,gameObject) => {},
+                //width: 50,
+                //height: 100
+            }))
+            this.cards.push(new CardDraggable({
+                scene: this,
+                x:200,
+                y:200,
+                cardname: 'blattAss',
+                depth: 1,
+                color : "blatt",
+                symbol : "ass",
+                value : 11,
                 cardback: 'cardback',
                 ondragend: (pointer,gameObject) => {},
                 //width: 50,
@@ -356,6 +384,20 @@ export default class GaigelMode1 extends Phaser.Scene
                 //width: 50,
                 //height: 100
             }))
+            this.cards.push(new CardDraggable({
+                scene: this,
+                x:200,
+                y:200,
+                cardname: 'herzAss',
+                depth: 1,
+                color : "herz",
+                symbol : "ass",
+                value : 11,
+                cardback: 'cardback',
+                ondragend: (pointer,gameObject) => {},
+                //width: 50,
+                //height: 100
+            }))
         }
 
         //Schellen Karten*2
@@ -425,6 +467,20 @@ export default class GaigelMode1 extends Phaser.Scene
                 color : "schellen",
                 symbol : "koenig",
                 value : 4,
+                cardback: 'cardback',
+                ondragend: (pointer,gameObject) => {},
+                //width: 50,
+                //height: 100
+            }))
+            this.cards.push(new CardDraggable({
+                scene: this,
+                x:200,
+                y:200,
+                cardname: 'schellenAss',
+                depth: 1,
+                color : "schellen",
+                symbol : "ass",
+                value : 11,
                 cardback: 'cardback',
                 ondragend: (pointer,gameObject) => {},
                 //width: 50,
