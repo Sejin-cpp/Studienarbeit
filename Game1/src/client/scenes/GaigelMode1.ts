@@ -110,6 +110,10 @@ export default class GaigelMode1 extends Phaser.Scene
         this.input.on('dragend',(pointer,gameObject) =>{
             this.stateMachine.setState('idle')
         })
+
+        this.room.onMessage(ClientMessage.CardMove,(message) =>{
+            console.log(message)
+        })
         
     }
     
@@ -119,7 +123,7 @@ export default class GaigelMode1 extends Phaser.Scene
     }
 
     private cardMoveUpdate(){
-        this.room.send(ClientMessage.CardMove, {id:this.tempCard.id,x: this.tempCard.x, y: this.tempCard.y})
+        this.room.send(ClientMessage.CardMove, {card:this.tempCard})
     }
 
     createCardObjects(){

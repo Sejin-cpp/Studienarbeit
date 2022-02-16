@@ -16,9 +16,6 @@ export default class CardDraggable extends CardBase{
         this.setInteractive();
         this.scene.input.setDraggable(this);
 
-     
-        
-        
         this.on('pointerdown', (pointer,gameObject) =>{
             
             if (pointer.rightButtonDown())
