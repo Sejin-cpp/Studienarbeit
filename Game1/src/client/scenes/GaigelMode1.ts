@@ -212,8 +212,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'eichelAss',
                 depth: 1,
                 color : "eichel",
@@ -300,8 +300,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'blattAss',
                 depth: 1,
                 color : "blatt",
@@ -388,8 +388,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'herzAss',
                 depth: 1,
                 color : "herz",
@@ -406,8 +406,8 @@ export default class GaigelMode1 extends Phaser.Scene
         for (var i = 0; i < 2; i++){
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'schellen7',
                 depth: 1,
                 color : "schellen",
@@ -420,8 +420,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'schellen10',
                 depth: 1,
                 color : "schellen",
@@ -434,8 +434,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'schellenUnter',
                 depth: 1,
                 color : "schellen",
@@ -448,8 +448,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'schellenOber',
                 depth: 1,
                 color : "schellen",
@@ -462,8 +462,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'schellenKoenig',
                 depth: 1,
                 color : "schellen",
@@ -476,8 +476,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }))
             this.cards.push(new CardDraggable({
                 scene: this,
-                x:200,
-                y:200,
+                x:this.cardx,
+                y:this.cardy,
                 cardname: 'schellenAss',
                 depth: 1,
                 color : "schellen",
