@@ -4,7 +4,8 @@ import { GaigelState } from '../../server/rooms/schema/GaigelState'
 import CardDraggable from '../../gameObjects/CardDraggable'
 import StateMachine from '../../statemachine/StateMachine'
 import {ClientMessage} from '../../types/ClientMessage'
-
+import CardZone from '../../gameObjects/Cardzone'
+import PlayerZone from '../../gameObjects/Playerzone'
 
 export default class GaigelMode1 extends Phaser.Scene
 {
@@ -13,12 +14,21 @@ export default class GaigelMode1 extends Phaser.Scene
     private stateMachine! : StateMachine
     private room!: Colyseus.Room<GaigelState>
     private tempCard!:  CardDraggable
-    private cardx = 200;
-    private cardy = 200;
+    private cardx = 0;
+    private cardy = 0;
+    private gameWidth;
+    private gameHeight;
+    private centerX;
+    private centerY;
+    private differenz;
+    private ownZone! : PlayerZone;
+    private enemyZone! : PlayerZone;
+    private stichZone! : CardZone;
 	constructor()
 	{
 		super('hello-world')
         this.cards = new Array<CardDraggable>()
+      
 	}
 
     init()
@@ -35,6 +45,11 @@ export default class GaigelMode1 extends Phaser.Scene
 
 	preload()
     {
+        this.gameWidth = this.sys.game.canvas.width
+        this.gameHeight = this.sys.game.canvas.height
+        this.centerX = this.gameWidth/2;
+        this.centerY = this.gameHeight/2;
+
         this.load.image('eichel7','assets/eichel7.png')
         this.load.image('eichel10','assets/eichel10.png')
         this.load.image('eichelAss','assets/eichelAss.png')
@@ -68,14 +83,19 @@ export default class GaigelMode1 extends Phaser.Scene
 
     async create()
     {
-       this.input.mouse.disableContextMenu();
+       
+      // this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
+
+       //erstelle Kartendeck
+       this.cardx = this.centerX+200;
+       this.cardy = this.centerY;
        this.createCardObjects();
        var id = 0;
        this.cards.forEach(element => {
-        element.setScale(0.5);
+        element.setScale(0.7);
         element.on('pointerdown', (pointer,gameObject) =>{
             if (pointer.rightButtonDown())
             {
@@ -86,11 +106,18 @@ export default class GaigelMode1 extends Phaser.Scene
         element.id = id;
         id++;
         });
+        //erstelle Kartenablagestellen
+        this.ownZone = new PlayerZone(this,this.centerX,125,750,250);
+        this.enemyZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
+        this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250);
+        
        this.room.onStateChange.once(state => { 
            console.dir(state)
            this.room.state.setCardsInDeck(this.cards)
        })
 
+
+       //Funktionen beim Ausführen einer Mausfunktion
        this.input.on('dragstart',(pointer,gameObject) =>{
             this.stateMachine.setState('cardMove')
             this.tempCard = gameObject
@@ -108,11 +135,47 @@ export default class GaigelMode1 extends Phaser.Scene
             this.stateMachine.setState('idle')
         })
 
+        this.input.on('drop', function (pointer, gameObject, dropZone) {
+
+            gameObject.x = dropZone.x;
+            gameObject.y = dropZone.y;
+    
+            gameObject.input.enabled = false;
+    
+        });
+        /*
+            this.input.on('dragend', function (pointer, gameObject, dropped) {
+
+            if (!dropped)
+            {
+                gameObject.x = gameObject.input.dragStartX;
+                gameObject.y = gameObject.input.dragStartY;
+            }
+
+                graphics.clear();
+                graphics.lineStyle(2, 0xffff00);
+                graphics.strokeRect(zone.x - zone.input.hitArea.width / 2, zone.y - zone.input.hitArea.height / 2, zone.input.hitArea.width, zone.input.hitArea.height);
+
+             });
+        
+        */
+
+        //sobald ein anderer Spieler eine Karte bewegt, wird das Spielfeld dementsprechend aktualisiert
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
-                    element.x = message.card.x
-                    element.y = message.card.y
+                    if(message.card.x > this.centerX){
+                        element.x = this.centerX -(message.card.x - this.centerX);
+                    }
+                    else{
+                        element.x = this.centerX + (this.centerX - message.card.x)
+                    }
+                    if(message.card.y > this.centerY){
+                        element.y = this.centerY - (message.card.y - this.centerY);
+                    }
+                    else{
+                        element.y = this.centerY + (this.centerY - message.card.y)
+                    }
                 }
            });
         })
