@@ -107,14 +107,14 @@ export default class GaigelMode1 extends Phaser.Scene
         id++;
         });
         //erstelle Kartenablagestellen
-        this.ownZone = new PlayerZone(this,this.centerX,125,750,250);
-        this.enemyZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
+        this.enemyZone = new PlayerZone(this,this.centerX,125,750,250);
+        this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
         this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250);
         
        this.room.onStateChange.once(state => { 
            console.dir(state)
            this.room.state.setCardsInDeck(this.cards)
-       })
+       }) 
 
 
        //Funktionen beim Ausführen einer Mausfunktion
@@ -131,10 +131,36 @@ export default class GaigelMode1 extends Phaser.Scene
 
         })
         
-        this.input.on('dragend',(pointer,gameObject) =>{
-            this.stateMachine.setState('idle')
-        })
+        this.input.on('dragend',(pointer,gameObject, dropped) =>{
+            if (!dropped)
+            {
+                gameObject.x = gameObject.input.dragStartX;
+                gameObject.y = gameObject.input.dragStartY;
+            }
+            this.stateMachine.setState('idle');
+            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
 
+            
+        })
+        //Eigen gezogene Karten können nur auf dem Stich oder auf der eigenen Hand abgelegt werden
+        this.input.on('drop', (pointer, gameObject, target) => {
+            if(target == this.stichZone.dropZone){
+                gameObject.x = target.x;
+                gameObject.y = target.y;
+                gameObject.input.enabled = false;
+            }
+            else if(target == this.ownZone.dropZone){
+                gameObject.x = (target.x - 300) + (target.data.values.cards * 150);
+                target.data.values.cards++;
+                gameObject.y = target.y;
+            }
+            else{
+                gameObject.x = gameObject.input.dragStartX;
+                gameObject.y = gameObject.input.dragStartY;
+            }
+        });
+
+        /*
         this.input.on('drop', function (pointer, gameObject, dropZone) {
 
             gameObject.x = dropZone.x;
@@ -164,6 +190,11 @@ export default class GaigelMode1 extends Phaser.Scene
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
+                    if((message.card.x == this.cardx) && (message.card.y == this.cardy)){
+                        element.x = message.card.x;
+                        element.y = message.card.y;
+                        return
+                    }
                     if(message.card.x > this.centerX){
                         element.x = this.centerX -(message.card.x - this.centerX);
                     }
