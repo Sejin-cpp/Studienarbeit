@@ -160,15 +160,7 @@ export default class GaigelMode1 extends Phaser.Scene
             }
         });
 
-        /*
-        this.input.on('drop', function (pointer, gameObject, dropZone) {
-
-            gameObject.x = dropZone.x;
-            gameObject.y = dropZone.y;
-    
-            gameObject.input.enabled = false;
-    
-        });
+       
         /*
             this.input.on('dragend', function (pointer, gameObject, dropped) {
 
