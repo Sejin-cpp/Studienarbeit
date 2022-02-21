@@ -14,6 +14,7 @@ export default class CardBase extends Phaser.GameObjects.Sprite{
         this.color = color;
         this.symbol = symbol;
         this.value = value;
+        this.onHand = false;
         this.scene.add.existing(this);
 
        

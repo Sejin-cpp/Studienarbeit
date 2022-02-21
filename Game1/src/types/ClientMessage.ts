@@ -1,5 +1,7 @@
 export enum ClientMessage
 {
     CardMove,
-    CardFlip
+    CardFlip,
+    CardDrop,
+    CardUpdate
 }

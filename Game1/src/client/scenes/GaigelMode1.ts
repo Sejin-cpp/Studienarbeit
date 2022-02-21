@@ -84,7 +84,7 @@ export default class GaigelMode1 extends Phaser.Scene
     async create()
     {
        
-       this.input.mouse.disableContextMenu();
+       //this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
@@ -95,16 +95,16 @@ export default class GaigelMode1 extends Phaser.Scene
        this.createCardObjects();
        var id = 0;
        this.cards.forEach(element => {
-        element.setScale(0.7);
-        element.on('pointerdown', (pointer,gameObject) =>{
-            if (pointer.rightButtonDown())
-            {
-                this.room.send(ClientMessage.CardFlip,{id: element.id})
-                element.flip()
-            }
-        });
-        element.id = id;
-        id++;
+            element.setScale(0.7);
+            element.on('pointerdown', (pointer,gameObject) =>{
+                if (pointer.rightButtonDown())
+                {
+                    this.room.send(ClientMessage.CardFlip,{id: element.id, onHand: element.onHand})
+                    element.flip()
+                }
+            });
+            element.id = id;
+            id++;
         });
         //erstelle Kartenablagestellen
         this.enemyZone = new PlayerZone(this,this.centerX,125,750,250);
@@ -113,14 +113,22 @@ export default class GaigelMode1 extends Phaser.Scene
         
        this.room.onStateChange.once(state => { 
            console.dir(state)
-           this.room.state.setCardsInDeck(this.cards)
+           //this.room.state.setCardsInDeck(this.cards)
        }) 
 
 
        //Funktionen beim Ausführen einer Mausfunktion
        this.input.on('dragstart',(pointer,gameObject) =>{
-            this.stateMachine.setState('cardMove')
-            this.tempCard = gameObject
+            if(!gameObject.draggable) return;
+            this.stateMachine.setState('cardMove');
+            this.tempCard = gameObject;
+            if(gameObject.onHand == true){
+                this.ownZone.dropZone.data.values.cards--;
+                console.log(this.ownZone.dropZone.data.values.cards)
+                gameObject.onHand = false;
+                this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});
+            }
+           
         })
 
         this.input.on('drag',(pointer,gameObject,dragX,dragY) =>{
@@ -152,31 +160,16 @@ export default class GaigelMode1 extends Phaser.Scene
             else if(target == this.ownZone.dropZone){
                 gameObject.x = (target.x - 300) + (target.data.values.cards * 150);
                 target.data.values.cards++;
+                console.log(this.ownZone.dropZone.data.values.cards)
                 gameObject.y = target.y;
+                gameObject.onHand = true;
+                this.room.send(ClientMessage.CardDrop, {id:this.tempCard.id});
             }
             else{
                 gameObject.x = gameObject.input.dragStartX;
                 gameObject.y = gameObject.input.dragStartY;
             }
         });
-
-       
-        /*
-            this.input.on('dragend', function (pointer, gameObject, dropped) {
-
-            if (!dropped)
-            {
-                gameObject.x = gameObject.input.dragStartX;
-                gameObject.y = gameObject.input.dragStartY;
-            }
-
-                graphics.clear();
-                graphics.lineStyle(2, 0xffff00);
-                graphics.strokeRect(zone.x - zone.input.hitArea.width / 2, zone.y - zone.input.hitArea.height / 2, zone.input.hitArea.width, zone.input.hitArea.height);
-
-             });
-        
-        */
 
         //sobald ein anderer Spieler eine Karte bewegt, wird das Spielfeld dementsprechend aktualisiert
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
@@ -204,18 +197,36 @@ export default class GaigelMode1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.CardFlip,(message) =>{
+            if(message.onHand == false){
+                this.cards.forEach(element => {
+                    if(message.id == element.id){
+                        element.flip()
+                    }
+                });
+            }
+        })
+
+        this.room.onMessage(ClientMessage.CardDrop,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
-                    element.flip()
+                    element.setTexture(element.cardback);
                 }
-           });
+            });
+        })
+
+        this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
+            this.cards.forEach(element => {
+                if(message.id == element.id){
+                    console.log(message.texture);
+                    element.setTexture(message.card.textureKey);
+                }
+            });
         })
         
     }
     
 
     private cardMoveEnter(){
-        console.log("drag")
         this.room.send(ClientMessage.CardMove,"StartDrag")
     }
 

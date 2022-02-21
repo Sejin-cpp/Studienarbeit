@@ -22,8 +22,21 @@ export class GaigelRoom extends Room<GaigelState> {
     this.onMessage(ClientMessage.CardFlip, (client, message) => {
       this.broadcast(ClientMessage.CardFlip,message, {
         except: client
-    })
-  });
+      })
+    });
+
+    this.onMessage(ClientMessage.CardDrop, (client, message) => {
+      this.broadcast(ClientMessage.CardDrop,message, {
+        except: client
+      })
+    });
+
+    this.onMessage(ClientMessage.CardUpdate, (client, message) => {
+      console.log(message)
+      this.broadcast(ClientMessage.CardUpdate,message, {
+        except: client
+      })
+    });
 
   }
 
