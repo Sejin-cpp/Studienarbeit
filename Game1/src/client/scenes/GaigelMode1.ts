@@ -175,6 +175,7 @@ export default class GaigelMode1 extends Phaser.Scene
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
+                    
                     if((message.card.x == this.cardx) && (message.card.y == this.cardy)){
                         element.x = message.card.x;
                         element.y = message.card.y;
@@ -192,6 +193,7 @@ export default class GaigelMode1 extends Phaser.Scene
                     else{
                         element.y = this.centerY + (this.centerY - message.card.y)
                     }
+                    
                 }
            });
         })
@@ -222,7 +224,6 @@ export default class GaigelMode1 extends Phaser.Scene
                 }
             });
         })
-        
     }
     
 
@@ -591,5 +592,6 @@ export default class GaigelMode1 extends Phaser.Scene
     update(t: number, dt: number)
     {
         this.stateMachine.update(dt)
+        
     }
 }

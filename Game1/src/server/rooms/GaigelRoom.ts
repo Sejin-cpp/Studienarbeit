@@ -3,7 +3,7 @@ import { GaigelState } from "./schema/GaigelState"
 import {ClientMessage} from '../../types/ClientMessage'
 
 export class GaigelRoom extends Room<GaigelState> {
-
+  private clientCount = 0;
   onCreate (options: any) {
     this.setState(new GaigelState())
 
@@ -43,10 +43,12 @@ export class GaigelRoom extends Room<GaigelState> {
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!")
     this.state.addPlayer(client.sessionId)
+    this.clientCount++;
   }
 
   onLeave (client: Client, consented: boolean) {
     console.log(client.sessionId, "left!")
+    this.clientCount--;
   }
 
   onDispose() {
