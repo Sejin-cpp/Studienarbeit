@@ -4,6 +4,7 @@ import {ClientMessage} from '../../types/ClientMessage'
 
 export class GaigelRoom extends Room<GaigelState> {
   private clientCount = 0;
+  private setCards = false;
   onCreate (options: any) {
     this.setState(new GaigelState())
 
@@ -26,6 +27,7 @@ export class GaigelRoom extends Room<GaigelState> {
     });
 
     this.onMessage(ClientMessage.CardDrop, (client, message) => {
+      console.log(message)
       this.broadcast(ClientMessage.CardDrop,message, {
         except: client
       })
@@ -44,6 +46,11 @@ export class GaigelRoom extends Room<GaigelState> {
     console.log(client.sessionId, "joined!")
     this.state.addPlayer(client.sessionId)
     this.clientCount++;
+    if(this.setCards == false){
+      this.state.setCardsInDeck();
+      console.log(this.state.cardsInDeck)
+      this.setCards = true;
+    }
   }
 
   onLeave (client: Client, consented: boolean) {

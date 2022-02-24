@@ -93,7 +93,7 @@ export default class GaigelMode1 extends Phaser.Scene
        this.cardx = this.centerX+200;
        this.cardy = this.centerY;
        this.createCardObjects();
-       var id = 0;
+       var id = 1;
        this.cards.forEach(element => {
             element.setScale(0.7);
             element.on('pointerdown', (pointer,gameObject) =>{
@@ -124,7 +124,6 @@ export default class GaigelMode1 extends Phaser.Scene
             this.tempCard = gameObject;
             if(gameObject.onHand == true){
                 this.ownZone.dropZone.data.values.cards--;
-                console.log(this.ownZone.dropZone.data.values.cards)
                 gameObject.onHand = false;
                 this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});
             }
