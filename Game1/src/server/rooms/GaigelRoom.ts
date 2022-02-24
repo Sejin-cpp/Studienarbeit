@@ -48,7 +48,6 @@ export class GaigelRoom extends Room<GaigelState> {
     this.clientCount++;
     if(this.setCards == false){
       this.state.setCardsInDeck();
-      console.log(this.state.cardsInDeck)
       this.setCards = true;
     }
   }
