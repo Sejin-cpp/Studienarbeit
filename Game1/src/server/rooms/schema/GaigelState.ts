@@ -70,9 +70,9 @@ export class GaigelState extends Schema
   {
     super()
 
-    this.playerstates = new ArraySchema<PlayerState>()
-    this.cardsInDeck = new  ArraySchema <CardState>()
-    this.cardsInStich = new  ArraySchema <CardState>()
+    this.playerstates = new ArraySchema<PlayerState>();
+    this.cardsInDeck = new  ArraySchema <CardState>();
+    this.cardsInStich = new  ArraySchema <CardState>();
   }
   addPlayer(id : string)
   {
@@ -136,12 +136,21 @@ export class GaigelState extends Schema
         
     
   }
-
-  removeCardFromDeck(){
-
+  //diese Methode fügt die Karte mit der übergebenen KartenID zu der Hand des Spielers mit der übergebenen SpielerID hinzu
+  addCardToPlayer(playerid :string,cardid : number){
+     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+     var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
+     if(cardIndex == -1){ //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte zur Spielerhadn zugefügt und aus dem Deck gelöscht
+      cardIndex = this.cardsInDeck.findIndex((cardstate) => cardstate.id == cardid);
+      this.playerstates[playerIndex].addCardInHand(this.cardsInDeck[cardIndex]);
+      this.cardsInDeck.splice(cardIndex,1);
+     }
+     else{  //falls die Karte sich bereits in der Hand des Spielers befindet, passiert nichts
+       return
+     }
   }
 
   removeCardFromPlayerHand(id : string){
-
+    
   }
 }

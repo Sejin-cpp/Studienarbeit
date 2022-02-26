@@ -28,6 +28,7 @@ export class GaigelRoom extends Room<GaigelState> {
 
     this.onMessage(ClientMessage.CardDrop, (client, message) => {
       console.log(message)
+      this.state.addCardToPlayer(client.sessionId,message.id)
       this.broadcast(ClientMessage.CardDrop,message, {
         except: client
       })

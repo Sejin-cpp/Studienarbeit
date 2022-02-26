@@ -117,15 +117,20 @@ export default class GaigelMode1 extends Phaser.Scene
        }) 
 
 
-       //Funktionen beim Ausführen einer Mausfunktion
+       //----------Funktionen beim Ausführen einer Mausfunktion-----------------
+       //beim Start eines drags einer Karte mit dem Mauszeiger, wird diese Funktion ausgeführt
        this.input.on('dragstart',(pointer,gameObject) =>{
             if(!gameObject.draggable) return;
             this.stateMachine.setState('cardMove');
             this.tempCard = gameObject;
-            if(gameObject.onHand == true){
-                this.ownZone.dropZone.data.values.cards--;
+            if(gameObject.onHand == true){  //wahr falls sich die Karte auf deiner Hand befand
+                this.ownZone.removeCard(gameObject);    //entferne Karte aus deiner Hand
+                this.ownZone.updateCardPosition();      //aktualisiere die neuen Positionen
                 gameObject.onHand = false;
-                this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});
+                this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});    //sende eine Nachricht an den Server zur Synchronisierung des Kartenbildes mit allen anderen Spielern
+                this.ownZone.cards.forEach(element => {
+                    this.room.send(ClientMessage.CardMove, {card:element, id:element.id});              //sende eine Nachricht für jede Karte an, um die neuen Postionen der Karten auf der Hand zu synchronisieren
+                });
             }
            
         })
@@ -157,8 +162,14 @@ export default class GaigelMode1 extends Phaser.Scene
                 gameObject.input.enabled = false;
             }
             else if(target == this.ownZone.dropZone){
-                gameObject.x = (target.x - 300) + (target.data.values.cards * 150);
-                target.data.values.cards++;
+                if(target.data.values.cards >= 5){
+                    gameObject.x = gameObject.input.dragStartX;
+                    gameObject.y = gameObject.input.dragStartY;
+                    return
+                }
+                //gameObject.x = (target.x - 300) + (target.data.values.cards * 150);
+                this.ownZone.addCard(gameObject);
+                this.ownZone.updateCardPosition();
                 console.log(this.ownZone.dropZone.data.values.cards)
                 gameObject.y = target.y;
                 gameObject.onHand = true;
@@ -170,6 +181,8 @@ export default class GaigelMode1 extends Phaser.Scene
             }
         });
 
+
+        //------------Funktionen welche beim eintreffen von Nachrichten vom Server ausgeführt werden-----------------
         //sobald ein anderer Spieler eine Karte bewegt, wird das Spielfeld dementsprechend aktualisiert
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
             this.cards.forEach(element => {
