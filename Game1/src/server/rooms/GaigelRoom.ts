@@ -26,16 +26,24 @@ export class GaigelRoom extends Room<GaigelState> {
       })
     });
 
-    this.onMessage(ClientMessage.CardDrop, (client, message) => {
+    this.onMessage(ClientMessage.CardDropOwnZone, (client, message) => {
       console.log(message)
       this.state.addCardToPlayer(client.sessionId,message.id)
-      this.broadcast(ClientMessage.CardDrop,message, {
+      this.broadcast(ClientMessage.CardDropOwnZone,message, {
+        except: client
+      })
+    });
+
+    this.onMessage(ClientMessage.CardDropStichZone, (client, message) => {
+      console.log(message)
+      this.state.addCardToStich(client.sessionId,message.id)
+      this.broadcast(ClientMessage.CardDropStichZone,message, {
         except: client
       })
     });
 
     this.onMessage(ClientMessage.CardUpdate, (client, message) => {
-      console.log(message)
+      //console.log(message)
       this.broadcast(ClientMessage.CardUpdate,message, {
         except: client
       })

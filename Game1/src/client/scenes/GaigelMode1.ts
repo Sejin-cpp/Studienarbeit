@@ -24,6 +24,7 @@ export default class GaigelMode1 extends Phaser.Scene
     private ownZone! : PlayerZone;
     private enemyZone! : PlayerZone;
     private stichZone! : CardZone;
+    private stichSet : boolean = false;
 	constructor()
 	{
 		super('hello-world')
@@ -126,11 +127,11 @@ export default class GaigelMode1 extends Phaser.Scene
             if(gameObject.onHand == true){  //wahr falls sich die Karte auf deiner Hand befand
                 this.ownZone.removeCard(gameObject);    //entferne Karte aus deiner Hand
                 this.ownZone.updateCardPosition();      //aktualisiere die neuen Positionen
-                gameObject.onHand = false;
                 this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});    //sende eine Nachricht an den Server zur Synchronisierung des Kartenbildes mit allen anderen Spielern
                 this.ownZone.cards.forEach(element => {
                     this.room.send(ClientMessage.CardMove, {card:element, id:element.id});              //sende eine Nachricht für jede Karte an, um die neuen Postionen der Karten auf der Hand zu synchronisieren
                 });
+                //gameObject.onHand = false;
             }
            
         })
@@ -144,10 +145,18 @@ export default class GaigelMode1 extends Phaser.Scene
         })
         
         this.input.on('dragend',(pointer,gameObject, dropped) =>{
-            if (!dropped)
+            if (!dropped)       //wird ausgeführt, wenn das gezogene Objekt nicht auf einer Zone abgelegt wurde
             {
-                gameObject.x = gameObject.input.dragStartX;
-                gameObject.y = gameObject.input.dragStartY;
+                if(gameObject.onHand == false){
+                    gameObject.x = gameObject.input.dragStartX;
+                    gameObject.y = gameObject.input.dragStartY;
+                }
+                else{                                                 //falls die Karte sich in der Hand befunden hat, kommt sie geordnet auf die Hand zurück
+                    this.ownZone.addCard(gameObject);
+                    this.ownZone.updateCardPosition();
+                    gameObject.y = this.ownZone.dropZone.y;
+                    this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+                }
             }
             this.stateMachine.setState('idle');
             this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
@@ -156,10 +165,13 @@ export default class GaigelMode1 extends Phaser.Scene
         })
         //Eigen gezogene Karten können nur auf dem Stich oder auf der eigenen Hand abgelegt werden
         this.input.on('drop', (pointer, gameObject, target) => {
-            if(target == this.stichZone.dropZone){
+            if((target == this.stichZone.dropZone) && !this.stichSet){
                 gameObject.x = target.x;
                 gameObject.y = target.y;
                 gameObject.input.enabled = false;
+                gameObject.onHand = false;
+                this.stichSet = true;
+                this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});     
             }
             else if(target == this.ownZone.dropZone){
                 if(target.data.values.cards >= 5){
@@ -167,17 +179,11 @@ export default class GaigelMode1 extends Phaser.Scene
                     gameObject.y = gameObject.input.dragStartY;
                     return
                 }
-                //gameObject.x = (target.x - 300) + (target.data.values.cards * 150);
                 this.ownZone.addCard(gameObject);
                 this.ownZone.updateCardPosition();
-                console.log(this.ownZone.dropZone.data.values.cards)
                 gameObject.y = target.y;
                 gameObject.onHand = true;
-                this.room.send(ClientMessage.CardDrop, {id:this.tempCard.id});
-            }
-            else{
-                gameObject.x = gameObject.input.dragStartX;
-                gameObject.y = gameObject.input.dragStartY;
+                this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
             }
         });
 
@@ -220,7 +226,7 @@ export default class GaigelMode1 extends Phaser.Scene
             }
         })
 
-        this.room.onMessage(ClientMessage.CardDrop,(message) =>{
+        this.room.onMessage(ClientMessage.CardDropOwnZone,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
                     element.setTexture(element.cardback);

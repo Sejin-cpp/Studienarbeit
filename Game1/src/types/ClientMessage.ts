@@ -2,7 +2,8 @@ export enum ClientMessage
 {
     CardMove,
     CardFlip,
-    CardDrop,
+    CardDropOwnZone,
+    CardDropStichZone,
     CardUpdate,
     RotateBoard
 }

@@ -35,6 +35,10 @@ class PlayerState extends Schema
 
   @type([CardState])
   cardsWon: CardState[]
+
+  @type([CardState])
+  cardInStich!: CardState
+
   constructor(id : string)
   {
     super()
@@ -46,12 +50,16 @@ class PlayerState extends Schema
     this.cardsInHand.push(card)
   }
 
+  addCardToStich(card: CardState){
+    this.cardInStich = card
+  }
+
   addCardWon(card: CardState){
     this.cardsWon.push(card)
   }
 
-  removeCardFromHand(){
-
+  removeCardFromHand(cardIndex: number){
+    this.cardsInHand.splice(cardIndex,1);
   }
 }
 
@@ -64,15 +72,13 @@ export class GaigelState extends Schema
   @type([CardState])
   cardsInDeck: CardState[]
 
-  @type([CardState])
-  cardsInStich: CardState[]
+  
   constructor()
   {
     super()
 
     this.playerstates = new ArraySchema<PlayerState>();
     this.cardsInDeck = new  ArraySchema <CardState>();
-    this.cardsInStich = new  ArraySchema <CardState>();
   }
   addPlayer(id : string)
   {
@@ -138,16 +144,29 @@ export class GaigelState extends Schema
   }
   //diese Methode fügt die Karte mit der übergebenen KartenID zu der Hand des Spielers mit der übergebenen SpielerID hinzu
   addCardToPlayer(playerid :string,cardid : number){
-     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
-     var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
-     if(cardIndex == -1){ //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte zur Spielerhadn zugefügt und aus dem Deck gelöscht
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
+    if(cardIndex == -1){                             //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte zur Spielerhadn zugefügt und aus dem Deck gelöscht
       cardIndex = this.cardsInDeck.findIndex((cardstate) => cardstate.id == cardid);
       this.playerstates[playerIndex].addCardInHand(this.cardsInDeck[cardIndex]);
       this.cardsInDeck.splice(cardIndex,1);
-     }
-     else{  //falls die Karte sich bereits in der Hand des Spielers befindet, passiert nichts
-       return
-     }
+    }
+    else{  //falls die Karte sich bereits in der Hand des Spielers befindet, passiert nichts
+      return
+    }
+  }
+  
+  addCardToStich(playerid :string,cardid : number){
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    if(this.playerstates[playerIndex].cardInStich == null){        
+      console.log("TEST")                                                 //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
+      var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);  //suche die Karte aus der Spielerhadn heraus
+      this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
+      this.playerstates[playerIndex].removeCardFromHand(cardIndex);
+    }
+    else{             //falls bereits eine Karte von diesem Spieler im aktuellen Stich ist, passiert nichts
+      return
+    }
   }
 
   removeCardFromPlayerHand(id : string){
