@@ -85,7 +85,7 @@ export default class GaigelMode1 extends Phaser.Scene
     async create()
     {
        
-       //this.input.mouse.disableContextMenu();
+       this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
@@ -165,13 +165,22 @@ export default class GaigelMode1 extends Phaser.Scene
         })
         //Eigen gezogene Karten können nur auf dem Stich oder auf der eigenen Hand abgelegt werden
         this.input.on('drop', (pointer, gameObject, target) => {
-            if((target == this.stichZone.dropZone) && !this.stichSet){
-                gameObject.x = target.x;
-                gameObject.y = target.y;
-                gameObject.input.enabled = false;
-                gameObject.onHand = false;
-                this.stichSet = true;
-                this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});     
+            if(target == this.stichZone.dropZone){
+                if(!this.stichSet){         //falls der Spieler bereits eine Karte auf dem Stich abgelegt hat, kommt die Karte auf die Hand zurück
+                    gameObject.x = target.x;
+                    gameObject.y = target.y;
+                    gameObject.input.enabled = false;
+                    gameObject.onHand = false;
+                    this.stichSet = true;
+                    this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});    
+                }
+                else{
+                    this.ownZone.addCard(gameObject);
+                    this.ownZone.updateCardPosition();
+                    gameObject.y = this.ownZone.dropZone.y;
+                    this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+                }
+                 
             }
             else if(target == this.ownZone.dropZone){
                 if(target.data.values.cards >= 5){
@@ -230,6 +239,7 @@ export default class GaigelMode1 extends Phaser.Scene
             this.cards.forEach(element => {
                 if(message.id == element.id){
                     element.setTexture(element.cardback);
+                    element.input.enabled = false;
                 }
             });
         })

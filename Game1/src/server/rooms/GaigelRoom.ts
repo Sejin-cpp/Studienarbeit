@@ -53,7 +53,7 @@ export class GaigelRoom extends Room<GaigelState> {
 
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!")
-    this.state.addPlayer(client.sessionId)
+    this.state.addPlayer(client.sessionId,this.clientCount+1)
     this.clientCount++;
     if(this.setCards == false){
       this.state.setCardsInDeck();
@@ -62,7 +62,8 @@ export class GaigelRoom extends Room<GaigelState> {
   }
 
   onLeave (client: Client, consented: boolean) {
-    console.log(client.sessionId, "left!")
+    console.log(client.sessionId, "left!");
+    this.state.removePlayer(client.sessionId);
     this.clientCount--;
   }
 

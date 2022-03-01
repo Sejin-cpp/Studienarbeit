@@ -14,14 +14,18 @@ class CardState extends Schema
   art : string
 
   @type('number')
-  wert : number
-  constructor(id :number, farbe: string, art: string, wert: number)
+  value : number
+  constructor(id :number, farbe: string, art: string, value: number)
   {
     super()
     this.id = id
     this.farbe = farbe
     this.art = art
-    this.wert = wert
+    this.value = value
+  }
+
+  getValue(){
+    return this.value;
   }
 }
 
@@ -29,6 +33,9 @@ class PlayerState extends Schema
 {
   @type('string')
   id : string  
+
+  @type('number')
+  team : number  
   
   @type([CardState])
   cardsInHand: CardState[]
@@ -36,22 +43,23 @@ class PlayerState extends Schema
   @type([CardState])
   cardsWon: CardState[]
 
-  @type([CardState])
+  @type(CardState)
   cardInStich!: CardState
 
-  constructor(id : string)
+  constructor(id : string, team: number)
   {
     super()
     this.id = id
     this.cardsInHand = new ArraySchema <CardState>()
     this.cardsWon = new ArraySchema <CardState>()
+    this.team = team
   }
   addCardInHand(card: CardState){
     this.cardsInHand.push(card)
   }
 
   addCardToStich(card: CardState){
-    this.cardInStich = card
+    this.cardInStich = card;
   }
 
   addCardWon(card: CardState){
@@ -60,6 +68,10 @@ class PlayerState extends Schema
 
   removeCardFromHand(cardIndex: number){
     this.cardsInHand.splice(cardIndex,1);
+  }
+
+  removeCardFromStich(){
+   
   }
 }
 
@@ -72,17 +84,25 @@ export class GaigelState extends Schema
   @type([CardState])
   cardsInDeck: CardState[]
 
-  
+  @type('number')
+  countCardInStich : number
+
   constructor()
   {
     super()
 
     this.playerstates = new ArraySchema<PlayerState>();
     this.cardsInDeck = new  ArraySchema <CardState>();
+    this.countCardInStich = 0;
   }
-  addPlayer(id : string)
+  addPlayer(id : string, team : number)
   {
-    this.playerstates.push(new PlayerState(id))
+    this.playerstates.push(new PlayerState(id, team))
+    console.log(team)
+  }
+  removePlayer(id: string){
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == id);
+    this.playerstates.splice(playerIndex,1);
   }
   setCardsInDeck()
   {
@@ -139,6 +159,7 @@ export class GaigelState extends Schema
       this.cardsInDeck.push(new CardState(46,"schellen","ober",3))
       this.cardsInDeck.push(new CardState(47,"schellen","koenig",4))
       this.cardsInDeck.push(new CardState(48,"schellen","ass",11))
+
         
     
   }
@@ -151,25 +172,46 @@ export class GaigelState extends Schema
       this.playerstates[playerIndex].addCardInHand(this.cardsInDeck[cardIndex]);
       this.cardsInDeck.splice(cardIndex,1);
     }
-    else{  //falls die Karte sich bereits in der Hand des Spielers befindet, passiert nichts
+    else{  //falls die Karte sich bereits in der Hands befindet, passiert nichts
       return
     }
   }
-  
+  //diese Methode fügt eine Karte dem aktuellen Stich hinzu und entfernt die Karte aus der Hand des Spielers, welcher sie gelegt hat
   addCardToStich(playerid :string,cardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
-    if(this.playerstates[playerIndex].cardInStich == null){        
-      console.log("TEST")                                                 //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
+    if(this.playerstates[playerIndex].cardInStich == null){                                                      //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
       var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);  //suche die Karte aus der Spielerhadn heraus
       this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
       this.playerstates[playerIndex].removeCardFromHand(cardIndex);
+      this.countCardInStich++;
+      if(this.countCardInStich == this.playerstates.length){
+        this.calculateWinner();
+      }
     }
     else{             //falls bereits eine Karte von diesem Spieler im aktuellen Stich ist, passiert nichts
       return
     }
   }
 
-  removeCardFromPlayerHand(id : string){
-    
+  calculateWinner(){
+    var team1Value = this.calculatePointsForTeam(1);
+    var team2Value = this.calculatePointsForTeam(2);
+ 
+    if(team1Value > team2Value){
+      console.log("Team1 gewinnt den Stich");
+    }
+    else if (team1Value < team2Value){
+      console.log("Team2 gewinnt den Stich");
+    }
+  }
+
+  calculatePointsForTeam(teamNr : number){
+    var value : number = 0;
+    this.playerstates.forEach(player => {
+      if (player.team == teamNr){
+        value += player.cardInStich.value;
+      }
+    })
+    return value;
   }
 }
