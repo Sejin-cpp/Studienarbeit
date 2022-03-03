@@ -107,6 +107,12 @@ export default class GaigelMode1 extends Phaser.Scene
             element.id = id;
             id++;
         });
+        Phaser.Actions.Shuffle(this.cards);
+        var i = 1;
+        this.cards.forEach(element =>{
+            element.setDepth(i);
+            i++;
+        })
         //erstelle Kartenablagestellen
         this.enemyZone = new PlayerZone(this,this.centerX,125,750,250);
         this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
@@ -145,6 +151,7 @@ export default class GaigelMode1 extends Phaser.Scene
         })
         
         this.input.on('dragend',(pointer,gameObject, dropped) =>{
+            if(!gameObject.draggable) return;
             if (!dropped)       //wird ausgeführt, wenn das gezogene Objekt nicht auf einer Zone abgelegt wurde
             {
                 if(gameObject.onHand == false){
@@ -165,6 +172,7 @@ export default class GaigelMode1 extends Phaser.Scene
         })
         //Eigen gezogene Karten können nur auf dem Stich oder auf der eigenen Hand abgelegt werden
         this.input.on('drop', (pointer, gameObject, target) => {
+            if(!gameObject.draggable) return;
             if(target == this.stichZone.dropZone){
                 if(!this.stichSet){         //falls der Spieler bereits eine Karte auf dem Stich abgelegt hat, kommt die Karte auf die Hand zurück
                     gameObject.x = target.x;
@@ -251,6 +259,18 @@ export default class GaigelMode1 extends Phaser.Scene
                     element.setTexture(message.card.textureKey);
                 }
             });
+        })
+
+        this.room.onMessage(ClientMessage.YourTurn,(message) =>{
+            this.cards.forEach(element => {
+                element.setDraggAble(true);
+            })
+        })
+
+        this.room.onMessage(ClientMessage.EndTurn,(message) =>{
+            this.cards.forEach(element => {
+                element.setDraggAble(false);
+            })
         })
     }
     

@@ -27,6 +27,10 @@ export default class CardDraggable extends CardBase{
         
     }
 
+    setDraggAble(draggable){
+        this.draggable = draggable;
+    }
+
     flip(){
        const timeline = this.scene.tweens.timeline({
            onComplete: () => {

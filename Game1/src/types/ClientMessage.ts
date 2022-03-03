@@ -5,5 +5,7 @@ export enum ClientMessage
     CardDropOwnZone,
     CardDropStichZone,
     CardUpdate,
-    RotateBoard
+    RotateBoard,
+    YourTurn,
+    EndTurn,
 }

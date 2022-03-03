@@ -5,6 +5,7 @@ import {ClientMessage} from '../../types/ClientMessage'
 export class GaigelRoom extends Room<GaigelState> {
   private clientCount = 0;
   private setCards = false;
+  private turnCounter = 0;
   onCreate (options: any) {
     this.setState(new GaigelState())
 
@@ -40,6 +41,15 @@ export class GaigelRoom extends Room<GaigelState> {
       this.broadcast(ClientMessage.CardDropStichZone,message, {
         except: client
       })
+      client.send(ClientMessage.EndTurn);
+      if(this.turnCounter+1 == this.clientCount){
+        this.turnCounter = 0;
+      }
+      else{
+        this.turnCounter++;
+      }
+      this.clients[this.turnCounter].send(ClientMessage.YourTurn);
+
     });
 
     this.onMessage(ClientMessage.CardUpdate, (client, message) => {
@@ -58,6 +68,9 @@ export class GaigelRoom extends Room<GaigelState> {
     if(this.setCards == false){
       this.state.setCardsInDeck();
       this.setCards = true;
+    }
+    if(this.clientCount > 1){
+      client.send(ClientMessage.EndTurn)
     }
   }
 
