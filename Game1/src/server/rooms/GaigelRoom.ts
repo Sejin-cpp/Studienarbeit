@@ -40,20 +40,25 @@ export class GaigelRoom extends Room<GaigelState> {
     });
 
     this.onMessage(ClientMessage.CardDropStichZone, (client, message) => {
-      console.log(message)
-      this.state.addCardToStich(client.sessionId,message.id)
-      this.broadcast(ClientMessage.CardDropStichZone,message, {
-        except: client
-      })
-      client.send(ClientMessage.EndTurn);
-      if(this.turnCounter+1 == this.clientCount){
-        this.turnCounter = 0;
+      //console.log(message)
+      if(this.state.addCardToStich(client.sessionId,message.id)){
+        this.broadcast(ClientMessage.CardDropStichZone,message, {
+          except: client
+        })
+        client.send(ClientMessage.EndTurn);
+        if(this.turnCounter+1 == this.clientCount){
+          this.turnCounter = 0;
+        }
+        else{
+          this.turnCounter++;
+        }
+        if(this.state.countCardInStich == this.clients.length){
+          this.state.calculateWinner();
+        }
+        else{
+          this.clients[this.turnCounter].send(ClientMessage.YourTurn);
+        }
       }
-      else{
-        this.turnCounter++;
-      }
-      this.clients[this.turnCounter].send(ClientMessage.YourTurn);
-
     });
 
     this.onMessage(ClientMessage.CardUpdate, (client, message) => {

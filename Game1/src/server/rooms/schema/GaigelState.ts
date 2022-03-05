@@ -8,18 +8,18 @@ class CardState extends Schema
   id : number
 
   @type('string')
-  farbe : string
+  color : string
 
   @type('string')
   art : string
 
   @type('number')
   value : number
-  constructor(id :number, farbe: string, art: string, value: number)
+  constructor(id :number, color: string, art: string, value: number)
   {
     super()
     this.id = id
-    this.farbe = farbe
+    this.color = color
     this.art = art
     this.value = value
   }
@@ -81,6 +81,9 @@ export class GaigelState extends Schema
   @type([PlayerState])
   playerstates: PlayerState[]
 
+  @type([PlayerState])
+  possibleWinners: PlayerState[]
+
   @type([CardState])
   cardsInDeck: CardState[]
 
@@ -90,11 +93,15 @@ export class GaigelState extends Schema
   @type('string')
   trumpfColor! : string
 
+  @type('number')
+  teams! : number[]
+
   constructor()
   {
     super()
 
     this.playerstates = new ArraySchema<PlayerState>();
+    this.possibleWinners = new ArraySchema<PlayerState>();
     this.cardsInDeck = new  ArraySchema <CardState>();
     this.countCardInStich = 0;
   }
@@ -191,28 +198,32 @@ export class GaigelState extends Schema
       this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
       this.playerstates[playerIndex].removeCardFromHand(cardIndex);
       this.countCardInStich++;
-      if(this.countCardInStich == this.playerstates.length){
-        this.calculateWinner();
-      }
+      return true;
     }
     else{             //falls bereits eine Karte von diesem Spieler im aktuellen Stich ist, passiert nichts
-      return
+      return false;
     }
   }
 
   calculateWinner(){
-    var team1Value = this.calculatePointsForTeam(1);
-    var team2Value = this.calculatePointsForTeam(2);
- 
-    if(team1Value > team2Value){
-      console.log("Team1 gewinnt den Stich");
+    var winner! : PlayerState;
+    var tempValue = 0;
+    if(this.lookForTrumpfColor() == false){
+      this.possibleWinners = this.playerstates;
     }
-    else if (team1Value < team2Value){
-      console.log("Team2 gewinnt den Stich");
-    }
+    console.log(this.possibleWinners)
+    this.possibleWinners.forEach(player => {
+      if(tempValue < player.cardInStich.value){
+        tempValue= player.cardInStich.value;
+        winner = player
+      }
+    })
+    console.log("Der Stich wurde gewonnen von:");
+    console.log(winner.id);
+    return winner.id;
   }
 
-  calculatePointsForTeam(teamNr : number){
+  calculatePointsForTeam(teamNr : number){    //ggf. anpassen
     var value : number = 0;
     this.playerstates.forEach(player => {
       if (player.team == teamNr){
@@ -220,5 +231,16 @@ export class GaigelState extends Schema
       }
     })
     return value;
+  }
+
+  lookForTrumpfColor(){
+    var trumpfFound = false;
+    this.playerstates.forEach(player => {
+      if (player.cardInStich.color == this.trumpfColor){
+        this.possibleWinners.push(player)
+        trumpfFound = true;
+      }
+    })
+    return trumpfFound;
   }
 }
