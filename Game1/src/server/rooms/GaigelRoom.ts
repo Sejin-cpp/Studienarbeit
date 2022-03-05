@@ -9,18 +9,22 @@ export class GaigelRoom extends Room<GaigelState> {
   onCreate (options: any) {
     this.setState(new GaigelState())
 
-    this.onMessage("keydown", (client, message) => {
-      this.broadcast('keydown', message, {
-          except: client
-      })
-    });
+    //synchronisiere die Trumpffarbe mit den restlichen Clients
+    this.onMessage(ClientMessage.updateTrumpfColor, (client, message) => {
+      console.log(message)
+      this.state.setTrumpfColor(message.color);
+      this.broadcast(ClientMessage.updateTrumpfColor,message, {
+        except: client
+    })
+  });
 
+    //falls eine Karte bewegt wird, sendet der Server eine Nachricht an alle anderen Clients, um den Standort zu synchronisieren
     this.onMessage(ClientMessage.CardMove, (client, message) => {
         this.broadcast(ClientMessage.CardMove,message, {
           except: client
       })
     });
-
+    //falls eine Karte geflippt wird, sendet der Server eine Nachricht an alle anderen Clients, um den Kartenflip zu synchronisieren
     this.onMessage(ClientMessage.CardFlip, (client, message) => {
       this.broadcast(ClientMessage.CardFlip,message, {
         except: client
@@ -73,7 +77,8 @@ export class GaigelRoom extends Room<GaigelState> {
     if(this.clientCount == 2){  //beim 1v1 startet das Spiel nachdem zwei Spieler gejoined sind
       this.turnCounter = Math.floor(Math.random() * 2);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
-  
+      this.clients[0].send(ClientMessage.setTrumpfColor);
+      this.clients[1].send(ClientMessage.UpdateDeckPosition);
     }
   }
 

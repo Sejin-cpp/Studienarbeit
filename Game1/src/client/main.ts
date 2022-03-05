@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import 'regenerator-runtime/runtime'
-import GaigelMode1 from './scenes/GaigelMode1'
+import GaigelMode1v1 from './scenes/GaigelMode1v1'
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
@@ -16,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
 			gravity: { y: 200 }
 		}
 	},
-	scene: [GaigelMode1]
+	scene: [GaigelMode1v1]
 }
 
 export default new Phaser.Game(config)

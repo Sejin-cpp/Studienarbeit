@@ -7,7 +7,7 @@ import {ClientMessage} from '../../types/ClientMessage'
 import CardZone from '../../gameObjects/Cardzone'
 import PlayerZone from '../../gameObjects/Playerzone'
 
-export default class GaigelMode1 extends Phaser.Scene
+export default class GaigelMode1v1 extends Phaser.Scene
 {
     private client!: Colyseus.Client
     private cards : CardDraggable[]
@@ -210,12 +210,6 @@ export default class GaigelMode1 extends Phaser.Scene
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
-                    
-                    if((message.card.x == this.cardx) && (message.card.y == this.cardy)){
-                        element.x = message.card.x;
-                        element.y = message.card.y;
-                        return
-                    }
                     if(message.card.x > this.centerX){
                         element.x = this.centerX -(message.card.x - this.centerX);
                     }
@@ -233,6 +227,15 @@ export default class GaigelMode1 extends Phaser.Scene
            });
         })
 
+        //Falls man Spieler 2 ist, muss die Position des Decks geändert werden
+        this.room.onMessage(ClientMessage.UpdateDeckPosition,(message) =>{
+            this.cards.forEach(element => {
+                element.x = this.centerX-200;
+            });
+            
+        })
+
+        //Führe einen Kartenflip bei der Karte mit der in der Nachricht übergeben ID aus
         this.room.onMessage(ClientMessage.CardFlip,(message) =>{
             if(message.onHand == false){
                 this.cards.forEach(element => {
@@ -242,7 +245,7 @@ export default class GaigelMode1 extends Phaser.Scene
                 });
             }
         })
-
+        //Der Server schickt eine Nachricht, dass die Karte in die eines Mitspielers gelegt wurde. Verdecke diese Karte.
         this.room.onMessage(ClientMessage.CardDropOwnZone,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
@@ -251,7 +254,7 @@ export default class GaigelMode1 extends Phaser.Scene
                 }
             });
         })
-
+        //Der Server schickt eine Nachricht, dass eine Karte von einem Mitspieler aus seiner Hand bewegt wurde. Die Texture dieser Karte muss geupdatet werden(verdeckt oder nicht verdeckt).
         this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
@@ -260,16 +263,35 @@ export default class GaigelMode1 extends Phaser.Scene
                 }
             });
         })
-
+        //es ist dein Zug, du kannst Karten bewegen
         this.room.onMessage(ClientMessage.YourTurn,(message) =>{
             this.cards.forEach(element => {
                 element.setDraggAble(true);
             })
         })
-
+        //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
             this.cards.forEach(element => {
                 element.setDraggAble(false);
+            })
+        })
+
+        this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
+            this.cards[0].x = this.centerX-200;
+            this.cards[0].y = this.centerY;
+            this.cards[0].setTexture(this.cards[0].cardname)
+            this.cards[0].input.enabled = false;
+            this.room.send(ClientMessage.updateTrumpfColor,{id:this.cards[0].id, color: this.cards[0].color})
+        })
+
+        this.room.onMessage(ClientMessage.updateTrumpfColor,(message) =>{
+            this.cards.forEach(element => {
+                if(element.id == message.id){
+                    element.x = this.centerX+200;
+                    element.y = this.centerY;
+                    element.setTexture(element.cardname)
+                    element.input.enabled = false;
+                }
             })
         })
     }
