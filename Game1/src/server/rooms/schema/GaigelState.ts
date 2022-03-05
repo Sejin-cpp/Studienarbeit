@@ -87,6 +87,9 @@ export class GaigelState extends Schema
   @type('number')
   countCardInStich : number
 
+  @type('string')
+  trumpfColor! : string
+
   constructor()
   {
     super()
@@ -163,6 +166,10 @@ export class GaigelState extends Schema
         
     
   }
+  setTrumpfColor(color : string){
+    this.trumpfColor = color;
+  }
+
   //diese Methode fügt die Karte mit der übergebenen KartenID zu der Hand des Spielers mit der übergebenen SpielerID hinzu
   addCardToPlayer(playerid :string,cardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
