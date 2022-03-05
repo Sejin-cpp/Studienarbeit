@@ -11,7 +11,6 @@ export class GaigelRoom extends Room<GaigelState> {
 
     //synchronisiere die Trumpffarbe mit den restlichen Clients
     this.onMessage(ClientMessage.updateTrumpfColor, (client, message) => {
-      console.log(message)
       this.state.setTrumpfColor(message.color);
       this.broadcast(ClientMessage.updateTrumpfColor,message, {
         except: client
@@ -32,7 +31,6 @@ export class GaigelRoom extends Room<GaigelState> {
     });
 
     this.onMessage(ClientMessage.CardDropOwnZone, (client, message) => {
-      console.log(message)
       this.state.addCardToPlayer(client.sessionId,message.id)
       this.broadcast(ClientMessage.CardDropOwnZone,message, {
         except: client
@@ -53,7 +51,13 @@ export class GaigelRoom extends Room<GaigelState> {
           this.turnCounter++;
         }
         if(this.state.countCardInStich == this.clients.length){
-          this.state.calculateWinner();
+          var winner = this.state.calculateWinner();
+          this.clients.forEach(tempclient => {
+            if(tempclient.sessionId == winner.Id){
+              console.log(winner.cards)
+              tempclient.send(ClientMessage.winStich,{cards: winner.cards})
+            }
+          })
         }
         else{
           this.clients[this.turnCounter].send(ClientMessage.YourTurn);

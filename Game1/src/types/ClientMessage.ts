@@ -10,5 +10,7 @@ export enum ClientMessage
     YourTurn,
     EndTurn,
     setTrumpfColor,
-    updateTrumpfColor
+    updateTrumpfColor,
+    winStich,
+    loseStich
 }

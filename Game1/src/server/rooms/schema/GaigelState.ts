@@ -53,6 +53,7 @@ class PlayerState extends Schema
     this.cardsInHand = new ArraySchema <CardState>()
     this.cardsWon = new ArraySchema <CardState>()
     this.team = team
+    this.cardInStich = new CardState(0,"x","x",0);
   }
   addCardInHand(card: CardState){
     this.cardsInHand.push(card)
@@ -71,7 +72,7 @@ class PlayerState extends Schema
   }
 
   removeCardFromStich(){
-   
+    this.cardInStich = new CardState(0,"x","x",0);
   }
 }
 
@@ -193,7 +194,7 @@ export class GaigelState extends Schema
   //diese Methode fügt eine Karte dem aktuellen Stich hinzu und entfernt die Karte aus der Hand des Spielers, welcher sie gelegt hat
   addCardToStich(playerid :string,cardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
-    if(this.playerstates[playerIndex].cardInStich == null){                                                      //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
+    if(this.playerstates[playerIndex].cardInStich.id == 0){                                                      //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
       var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);  //suche die Karte aus der Spielerhadn heraus
       this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
       this.playerstates[playerIndex].removeCardFromHand(cardIndex);
@@ -208,10 +209,10 @@ export class GaigelState extends Schema
   calculateWinner(){
     var winner! : PlayerState;
     var tempValue = 0;
+    var cardIDs : number[] = [0];
     if(this.lookForTrumpfColor() == false){
       this.possibleWinners = this.playerstates;
     }
-    console.log(this.possibleWinners)
     this.possibleWinners.forEach(player => {
       if(tempValue < player.cardInStich.value){
         tempValue= player.cardInStich.value;
@@ -220,7 +221,15 @@ export class GaigelState extends Schema
     })
     console.log("Der Stich wurde gewonnen von:");
     console.log(winner.id);
-    return winner.id;
+    //füge den gewonnen Stich zum Gewinner hinzu und setzte den Stich zurück
+    var i = 0;
+    this.playerstates.forEach(player => {
+      winner.addCardWon(player.cardInStich)
+      cardIDs[i] = player.cardInStich.id;
+      player.removeCardFromStich();
+      i++;
+    })
+    return {Id: winner.id, cards: cardIDs};
   }
 
   calculatePointsForTeam(teamNr : number){    //ggf. anpassen

@@ -294,6 +294,20 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
             })
         })
+
+        this.room.onMessage(ClientMessage.winStich,(message) =>{
+            message.cards.forEach(id => {
+                this.cards.forEach(card => {
+                    if(card.id == id){
+                        card.depth = 1;
+                        card.x = this.centerX-500
+                        card.y = this.gameHeight-125
+                        card.input.enabled = false;
+                        this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
+                    }
+                })     
+            });
+        })
     }
     
 
