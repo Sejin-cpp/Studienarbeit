@@ -78,6 +78,8 @@ class PlayerState extends Schema
 
 export class GaigelState extends Schema 
 {
+  @type('boolean')
+  firstTurn : boolean
 
   @type([PlayerState])
   playerstates: PlayerState[]
@@ -95,7 +97,7 @@ export class GaigelState extends Schema
   trumpfColor! : string
 
   @type('number')
-  teams! : number[]
+  teams : number[] = [0,0,0]
 
   constructor()
   {
@@ -105,6 +107,7 @@ export class GaigelState extends Schema
     this.possibleWinners = new ArraySchema<PlayerState>();
     this.cardsInDeck = new  ArraySchema <CardState>();
     this.countCardInStich = 0;
+    this.firstTurn = true;
   }
   addPlayer(id : string, team : number)
   {
@@ -206,7 +209,8 @@ export class GaigelState extends Schema
     }
   }
 
-  calculateWinner(){
+  calculateWinnerOfStich(){
+    this.possibleWinners = new ArraySchema<PlayerState>();
     var winner! : PlayerState;
     var tempValue = 0;
     var cardIDs : number[] = [0];
@@ -232,16 +236,6 @@ export class GaigelState extends Schema
     return {Id: winner.id, cards: cardIDs};
   }
 
-  calculatePointsForTeam(teamNr : number){    //ggf. anpassen
-    var value : number = 0;
-    this.playerstates.forEach(player => {
-      if (player.team == teamNr){
-        value += player.cardInStich.value;
-      }
-    })
-    return value;
-  }
-
   lookForTrumpfColor(){
     var trumpfFound = false;
     this.playerstates.forEach(player => {
@@ -252,4 +246,25 @@ export class GaigelState extends Schema
     })
     return trumpfFound;
   }
+
+  testIfEndGame(){
+    var playerHasNoCards = false;
+    if (this.cardsInDeck.length == 0){
+      this.playerstates.forEach(player => {
+        if (player.cardsInHand.length == 0){
+          playerHasNoCards = true;
+        }
+      })
+    }
+    return playerHasNoCards;
+  }
+
+  calculateWinner(){
+    this.playerstates.forEach(player => {
+      player.cardsWon.forEach(card => {
+        this.teams[player.team-1] += card.value
+      })
+    })
+  }
+  
 }

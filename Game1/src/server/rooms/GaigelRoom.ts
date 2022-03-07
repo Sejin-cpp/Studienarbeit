@@ -51,17 +51,21 @@ export class GaigelRoom extends Room<GaigelState> {
           this.turnCounter++;
         }
         if(this.state.countCardInStich == this.clients.length){
-          var winner = this.state.calculateWinner();
+          var winner = this.state.calculateWinnerOfStich();
           this.clients.forEach(tempclient => {
             if(tempclient.sessionId == winner.Id){
               console.log(winner.cards)
               tempclient.send(ClientMessage.winStich,{cards: winner.cards})
+              tempclient.send(ClientMessage.YourTurn);
             }
           })
         }
         else{
           this.clients[this.turnCounter].send(ClientMessage.YourTurn);
         }
+      }
+      if(this.state.testIfEndGame()){
+        this
       }
     });
 
