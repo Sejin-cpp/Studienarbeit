@@ -1,5 +1,6 @@
 import { Schema, type, ArraySchema } from '@colyseus/schema'
 import CardDraggable from '../../../gameObjects/CardDraggable'
+import {FirstStich} from '../../../types/firstStich'
 
 
 class CardState extends Schema
@@ -15,6 +16,9 @@ class CardState extends Schema
 
   @type('number')
   value : number
+
+  @type('boolean')
+  hidden : boolean
   constructor(id :number, color: string, art: string, value: number)
   {
     super()
@@ -22,10 +26,20 @@ class CardState extends Schema
     this.color = color
     this.art = art
     this.value = value
+    this.hidden = true;
   }
 
   getValue(){
     return this.value;
+  }
+
+  flip(){
+    if(this.hidden){
+      this.hidden = false;
+    }
+    else{
+      this.hidden = true;
+    }
   }
 }
 
@@ -95,6 +109,9 @@ export class GaigelState extends Schema
 
   @type('string')
   trumpfColor! : string
+
+  @type('string')
+  firstStich! : string
 
   @type('number')
   teams : number[] = [0,0,0]
@@ -173,12 +190,20 @@ export class GaigelState extends Schema
       this.cardsInDeck.push(new CardState(46,"schellen","ober",3))
       this.cardsInDeck.push(new CardState(47,"schellen","koenig",4))
       this.cardsInDeck.push(new CardState(48,"schellen","ass",11))
-
-        
-    
   }
   setTrumpfColor(color : string){
     this.trumpfColor = color;
+  }
+  //wenn die Karte umgedreht wird, wird dessen Status im Server aktualisiert
+  flipCard(playerid: string, cardid: number){
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
+    if(cardIndex == -1){                             //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte nicht umgedreht
+      return false;
+    }
+    else{
+      this.playerstates[playerIndex].cardsInHand[cardIndex].flip();
+    }
   }
 
   //diese Methode fügt die Karte mit der übergebenen KartenID zu der Hand des Spielers mit der übergebenen SpielerID hinzu
@@ -202,6 +227,18 @@ export class GaigelState extends Schema
       this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
       this.playerstates[playerIndex].removeCardFromHand(cardIndex);
       this.countCardInStich++;
+      if(this.countCardInStich == 1 && this.firstTurn){     //beim ersten Stich und bei der ersten Karte, wird je nach Karte die Art der Spieleröffnung bestimmt
+        var tempCard : CardState = this.playerstates[playerIndex].cardInStich
+        if(tempCard.art == "ass" && tempCard.hidden){   //Andere Alte
+          this.firstStich = "AndereAlte"
+        } 
+        if(tempCard.art == "ass" && !tempCard.hidden){   //Ge-Elfen
+          this.firstStich = "Ge-Elfen"
+        }
+        if(tempCard.art != "ass" && tempCard.hidden){   //Höher Hat
+          this.firstStich = "HöherHat"
+        }
+      }
       return true;
     }
     else{             //falls bereits eine Karte von diesem Spieler im aktuellen Stich ist, passiert nichts
@@ -233,6 +270,7 @@ export class GaigelState extends Schema
       player.removeCardFromStich();
       i++;
     })
+    this.countCardInStich = 0;
     return {Id: winner.id, cards: cardIDs};
   }
 

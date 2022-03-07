@@ -98,7 +98,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
        this.cards.forEach(element => {
             element.setScale(0.7);
             element.on('pointerdown', (pointer,gameObject) =>{
-                if (pointer.rightButtonDown())
+                if (pointer.rightButtonDown() && element.onHand)
                 {
                     this.room.send(ClientMessage.CardFlip,{id: element.id, onHand: element.onHand})
                     element.flip()

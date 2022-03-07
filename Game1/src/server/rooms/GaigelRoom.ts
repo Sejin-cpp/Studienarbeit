@@ -25,6 +25,7 @@ export class GaigelRoom extends Room<GaigelState> {
     });
     //falls eine Karte geflippt wird, sendet der Server eine Nachricht an alle anderen Clients, um den Kartenflip zu synchronisieren
     this.onMessage(ClientMessage.CardFlip, (client, message) => {
+      this.state.flipCard(client.sessionId,message.id);
       this.broadcast(ClientMessage.CardFlip,message, {
         except: client
       })
