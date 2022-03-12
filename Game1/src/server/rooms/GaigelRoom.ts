@@ -52,13 +52,16 @@ export class GaigelRoom extends Room<GaigelState> {
           this.turnCounter++;
         }
         if(this.state.countCardInStich == this.clients.length){
+          var zaehler = 0;
           var winner = this.state.calculateWinnerOfStich();
           this.clients.forEach(tempclient => {
             if(tempclient.sessionId == winner.Id){
+              this.turnCounter = zaehler;
               console.log(winner.cards)
               tempclient.send(ClientMessage.winStich,{cards: winner.cards})
               tempclient.send(ClientMessage.YourTurn);
             }
+            zaehler++;
           })
         }
         else{
@@ -66,7 +69,7 @@ export class GaigelRoom extends Room<GaigelState> {
         }
       }
       if(this.state.testIfEndGame()){
-        this
+        
       }
     });
 

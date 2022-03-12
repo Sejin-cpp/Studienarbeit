@@ -12,19 +12,19 @@ class CardState extends Schema
   color : string
 
   @type('string')
-  art : string
+  symbol : string
 
   @type('number')
   value : number
 
   @type('boolean')
   hidden : boolean
-  constructor(id :number, color: string, art: string, value: number)
+  constructor(id :number, color: string, symbol: string, value: number)
   {
     super()
     this.id = id
     this.color = color
-    this.art = art
+    this.symbol = symbol
     this.value = value
     this.hidden = true;
   }
@@ -97,6 +97,9 @@ export class GaigelState extends Schema
 
   @type([PlayerState])
   playerstates: PlayerState[]
+
+  @type(PlayerState)
+  firstPlayerinFirstTurn!: PlayerState
 
   @type([PlayerState])
   possibleWinners: PlayerState[]
@@ -228,16 +231,18 @@ export class GaigelState extends Schema
       this.playerstates[playerIndex].removeCardFromHand(cardIndex);
       this.countCardInStich++;
       if(this.countCardInStich == 1 && this.firstTurn){     //beim ersten Stich und bei der ersten Karte, wird je nach Karte die Art der Spieleröffnung bestimmt
-        var tempCard : CardState = this.playerstates[playerIndex].cardInStich
-        if(tempCard.art == "ass" && tempCard.hidden){   //Andere Alte
-          this.firstStich = "AndereAlte"
+        var tempCard : CardState = this.playerstates[playerIndex].cardInStich;
+        this.firstPlayerinFirstTurn = this.playerstates[playerIndex];   //speichere den ersten Spieler
+        if(tempCard.symbol == "ass" && tempCard.hidden){   //Andere Alte
+          this.firstStich = "AndereAlte";
         } 
-        if(tempCard.art == "ass" && !tempCard.hidden){   //Ge-Elfen
-          this.firstStich = "Ge-Elfen"
+        if(tempCard.symbol == "ass" && !tempCard.hidden){   //Ge-Elfen
+          this.firstStich = "Ge-Elfen";
         }
-        if(tempCard.art != "ass" && tempCard.hidden){   //Höher Hat
-          this.firstStich = "HöherHat"
+        if(tempCard.symbol != "ass" && tempCard.hidden){   //Höher Hat
+          this.firstStich = "HöherHat";
         }
+        console.log(this.firstStich);
       }
       return true;
     }
@@ -251,17 +256,53 @@ export class GaigelState extends Schema
     var winner! : PlayerState;
     var tempValue = 0;
     var cardIDs : number[] = [0];
-    if(this.lookForTrumpfColor() == false){
-      this.possibleWinners = this.playerstates;
-    }
-    this.possibleWinners.forEach(player => {
-      if(tempValue < player.cardInStich.value){
-        tempValue= player.cardInStich.value;
-        winner = player
+    // bei einem Eröffnungsspiel hängt der Sieger davon ab, welche Karte als Erstes geworfen wurde
+    if(this.firstTurn){
+      this.firstTurn = false;
+      winner = this.firstPlayerinFirstTurn;
+      switch(this.firstStich){
+        case "AndereAlte":
+          this.playerstates.forEach(player => {
+            if(player != this.firstPlayerinFirstTurn){
+              //falls ein Spieler dieselbe Karte gelegt hat wie der Eröffnungsspieler, gweinnt er den Stich
+              if(player.cardInStich.color == this.firstPlayerinFirstTurn.cardInStich.color && player.cardInStich.symbol == this.firstPlayerinFirstTurn.cardInStich.symbol){
+                winner = player;
+              }
+            }
+          })
+          break; 
+        case "Ge-Elfen":
+          //der Eröffnungsspieler gewinnt in jedem Fall den Stich
+          break; 
+        case "HöherHat":
+          this.playerstates.forEach(player => {
+            if(player != this.firstPlayerinFirstTurn){
+              //es gewinnt der Spieler mit der Karte, welche dieselbe Farbe wie die Eröffnungskarte besitzt und den höchsten Wert besitzt
+              if(player.cardInStich.color == this.firstPlayerinFirstTurn.cardInStich.color && player.cardInStich.value > this.firstPlayerinFirstTurn.cardInStich.value){
+                this.firstPlayerinFirstTurn = player;
+              }
+            }
+          })
+          winner = this.firstPlayerinFirstTurn;
+          break; 
+        default:
       }
-    })
+    }
+    //Ansonsten gewinnt der Spieler mit der höchsten Karte. Bei Trumpffarben gewinnt der Spieler mit der höchsten Karte mit Trumpffarbe
+    else{
+      if(this.lookForTrumpfColor() == false){
+        this.possibleWinners = this.playerstates;
+      }
+      this.possibleWinners.forEach(player => {
+        if(tempValue < player.cardInStich.value){
+          tempValue= player.cardInStich.value;
+          winner = player
+        }
+      })
+    }
     console.log("Der Stich wurde gewonnen von:");
     console.log(winner.id);
+    
     //füge den gewonnen Stich zum Gewinner hinzu und setzte den Stich zurück
     var i = 0;
     this.playerstates.forEach(player => {
@@ -272,6 +313,8 @@ export class GaigelState extends Schema
     })
     this.countCardInStich = 0;
     return {Id: winner.id, cards: cardIDs};
+  
+    
   }
 
   lookForTrumpfColor(){
@@ -303,6 +346,18 @@ export class GaigelState extends Schema
         this.teams[player.team-1] += card.value
       })
     })
+    var winnerTeam = 0;
+    var tempValue = 0;
+    var zaehler = 1;
+    this.teams.forEach(team => {
+      if(team > tempValue){
+        winnerTeam = zaehler;
+        tempValue = team;
+      }
+      zaehler++;
+    })
+
+    console.log("Team ",winnerTeam," wins!");
   }
   
 }
