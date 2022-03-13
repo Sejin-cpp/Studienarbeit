@@ -25,6 +25,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private enemyZone! : PlayerZone;
     private stichZone! : CardZone;
     private stichSet : boolean = false;
+    private text;
 	constructor()
 	{
 		super('hello-world')
@@ -227,6 +228,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
            });
         })
 
+        this.room.onMessage(ClientMessage.firstTurn,(message) =>{
+            this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
+        })
+
         //Falls man Spieler 2 ist, muss die Position des Decks geändert werden
         this.room.onMessage(ClientMessage.UpdateDeckPosition,(message) =>{
             this.cards.forEach(element => {
@@ -296,6 +301,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.winStich,(message) =>{
+            this.stichSet = false;
             message.cards.forEach(id => {
                 this.cards.forEach(card => {
                     if(card.id == id){
@@ -303,10 +309,15 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         card.x = this.centerX-500
                         card.y = this.gameHeight-125
                         card.input.enabled = false;
+                        console.log(id);
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
                     }
                 })     
             });
+        })
+
+        this.room.onMessage(ClientMessage.loseStich,(message) =>{
+            this.stichSet = false;
         })
     }
     

@@ -114,7 +114,7 @@ export class GaigelState extends Schema
   trumpfColor! : string
 
   @type('string')
-  firstStich! : string
+  firstStich : string
 
   constructor()
   {
@@ -125,6 +125,7 @@ export class GaigelState extends Schema
     this.cardsInDeck = new  ArraySchema <CardState>();
     this.countCardInStich = 0;
     this.firstTurn = true;
+    this.firstStich = "";
   }
   addPlayer(id : string, team : number)
   {
@@ -240,11 +241,12 @@ export class GaigelState extends Schema
           this.firstStich = "HöherHat";
         }
         console.log(this.firstStich);
+        return this.firstStich;
       }
-      return true;
+      return "OK";
     }
     else{             //falls bereits eine Karte von diesem Spieler im aktuellen Stich ist, passiert nichts
-      return false;
+      return "NO";
     }
   }
 

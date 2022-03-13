@@ -40,7 +40,11 @@ export class GaigelRoom extends Room<GaigelState> {
 
     this.onMessage(ClientMessage.CardDropStichZone, (client, message) => {
       //console.log(message)
-      if(this.state.addCardToStich(client.sessionId,message.id)){
+      var info = this.state.addCardToStich(client.sessionId,message.id);
+      if(info != "NO"){
+        if(info != "OK"){
+          this.broadcast(ClientMessage.firstTurn,info);
+        }
         this.broadcast(ClientMessage.CardDropStichZone,message, {
           except: client
         })
@@ -60,6 +64,9 @@ export class GaigelRoom extends Room<GaigelState> {
               console.log(winner.cards)
               tempclient.send(ClientMessage.winStich,{cards: winner.cards})
               tempclient.send(ClientMessage.YourTurn);
+            }
+            else{
+              tempclient.send(ClientMessage.loseStich);
             }
             zaehler++;
           })
