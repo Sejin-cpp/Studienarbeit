@@ -116,9 +116,6 @@ export class GaigelState extends Schema
   @type('string')
   firstStich! : string
 
-  @type('number')
-  teams : number[] = [0,0,0]
-
   constructor()
   {
     super()
@@ -341,15 +338,16 @@ export class GaigelState extends Schema
   }
 
   calculateWinner(){
+    var teams : number[] = [0,0,0];
     this.playerstates.forEach(player => {
       player.cardsWon.forEach(card => {
-        this.teams[player.team-1] += card.value
+        teams[player.team-1] += card.value
       })
     })
     var winnerTeam = 0;
     var tempValue = 0;
     var zaehler = 1;
-    this.teams.forEach(team => {
+    teams.forEach(team => {
       if(team > tempValue){
         winnerTeam = zaehler;
         tempValue = team;

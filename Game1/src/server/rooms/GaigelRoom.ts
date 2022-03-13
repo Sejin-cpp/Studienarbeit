@@ -83,7 +83,7 @@ export class GaigelRoom extends Room<GaigelState> {
   }
 
   onJoin (client: Client, options: any) {
-    console.log(client.sessionId, "joined!")
+    
     this.state.addPlayer(client.sessionId,this.clientCount+1)
     this.clientCount++;
     if(this.setCards == false){
@@ -97,6 +97,7 @@ export class GaigelRoom extends Room<GaigelState> {
       this.clients[0].send(ClientMessage.setTrumpfColor);
       this.clients[1].send(ClientMessage.UpdateDeckPosition);
     }
+    console.log(client.sessionId, "joined!")
   }
 
   onLeave (client: Client, consented: boolean) {
