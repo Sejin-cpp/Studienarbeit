@@ -13,5 +13,6 @@ export enum ClientMessage
     updateTrumpfColor,
     winStich,
     loseStich,
-    firstTurn
+    firstTurn,
+    endGame
 }

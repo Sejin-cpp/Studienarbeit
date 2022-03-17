@@ -39,7 +39,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.stateMachine = new StateMachine(this, 'game')
         this.stateMachine.addState('idle')
             .addState('cardMove', {
-                onEnter: this.cardMoveEnter,
                 onUpdate: this.cardMoveUpdate
             })
             .setState('idle')
@@ -98,6 +97,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
        var id = 1;
        this.cards.forEach(element => {
             element.setScale(0.7);
+            //legt für jede Karte eine Funktion an, welche besagt, dass bei einem Rechtsklick auf die Karte, diese mit der Methode flip() umgedreht wird
             element.on('pointerdown', (pointer,gameObject) =>{
                 if (pointer.rightButtonDown() && element.onHand)
                 {
@@ -108,9 +108,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
             element.id = id;
             id++;
         });
-        Phaser.Actions.Shuffle(this.cards);
+        Phaser.Actions.Shuffle(this.cards); //Das Array, welches alle Karten enthält, wird gemischt
         var i = 1;
-        this.cards.forEach(element =>{
+        this.cards.forEach(element =>{      //Reihenfolge wird festgelegt
             element.setDepth(i);
             i++;
         })
@@ -133,7 +133,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.tempCard = gameObject;
             if(gameObject.onHand == true){  //wahr falls sich die Karte auf deiner Hand befand
                 this.ownZone.removeCard(gameObject);    //entferne Karte aus deiner Hand
-                this.ownZone.updateCardPosition();      //aktualisiere die neuen Positionen
+                this.ownZone.updateCardPosition();      //aktualisiere die neuen Positionen der Handkarten
                 this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});    //sende eine Nachricht an den Server zur Synchronisierung des Kartenbildes mit allen anderen Spielern
                 this.ownZone.cards.forEach(element => {
                     this.room.send(ClientMessage.CardMove, {card:element, id:element.id});              //sende eine Nachricht für jede Karte an, um die neuen Postionen der Karten auf der Hand zu synchronisieren
@@ -145,6 +145,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.input.on('drag',(pointer,gameObject,dragX,dragY) =>{
             if(!gameObject.draggable) return;
+            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id})
             gameObject.dragging = true;
             gameObject.x = dragX;
             gameObject.y = dragY;
@@ -227,7 +228,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
            });
         })
-
+        //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
         this.room.onMessage(ClientMessage.firstTurn,(message) =>{
             this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
         })
@@ -280,16 +281,18 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 element.setDraggAble(false);
             })
         })
-
+        //legt zufällig eine Karte als 
         this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
+            this.text = null;                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
             this.cards[0].x = this.centerX-200;
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
             this.cards[0].input.enabled = false;
             this.room.send(ClientMessage.updateTrumpfColor,{id:this.cards[0].id, color: this.cards[0].color})
         })
-
+        //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.updateTrumpfColor,(message) =>{
+            this.text = null;               //entfernt den Text, welche den über die Spieleröffnung informiert hat
             this.cards.forEach(element => {
                 if(element.id == message.id){
                     element.x = this.centerX+200;
@@ -319,11 +322,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.room.onMessage(ClientMessage.loseStich,(message) =>{
             this.stichSet = false;
         })
-    }
-    
-
-    private cardMoveEnter(){
-        this.room.send(ClientMessage.CardMove,"StartDrag")
     }
 
     private cardMoveUpdate(){

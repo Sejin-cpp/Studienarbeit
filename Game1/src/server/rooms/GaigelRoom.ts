@@ -76,7 +76,7 @@ export class GaigelRoom extends Room<GaigelState> {
         }
       }
       if(this.state.testIfEndGame()){
-        
+        this.state.calculateWinner();
       }
     });
 
