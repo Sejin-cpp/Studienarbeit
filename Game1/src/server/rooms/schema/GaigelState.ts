@@ -263,7 +263,7 @@ export class GaigelState extends Schema
         case "AndereAlte":
           this.playerstates.forEach(player => {
             if(player != this.firstPlayerinFirstTurn){
-              //falls ein Spieler dieselbe Karte gelegt hat wie der Eröffnungsspieler, gweinnt er den Stich
+              //falls ein Spieler dasselbe Ass gelegt hat wie der Eröffnungsspieler, gweinnt er den Stich
               if(player.cardInStich.color == this.firstPlayerinFirstTurn.cardInStich.color && player.cardInStich.symbol == this.firstPlayerinFirstTurn.cardInStich.symbol){
                 winner = player;
               }

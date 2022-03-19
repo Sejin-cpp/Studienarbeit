@@ -23,6 +23,7 @@ export default class CardDraggable extends CardBase{
     }
 
     flip(){
+       this.input.enabled = false;
        const timeline = this.scene.tweens.timeline({
            onComplete: () => {
                timeline.destroy();
@@ -65,5 +66,6 @@ export default class CardDraggable extends CardBase{
             duration: 200
        });
        timeline.play();
+       this.input.enabled = true;
     }
 }

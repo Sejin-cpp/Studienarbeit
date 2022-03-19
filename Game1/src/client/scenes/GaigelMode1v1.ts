@@ -20,7 +20,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private gameHeight;
     private centerX;
     private centerY;
-    private differenz;
     private ownZone! : PlayerZone;
     private enemyZone! : PlayerZone;
     private stichZone! : CardZone;
@@ -86,7 +85,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     async create()
     {
        
-       this.input.mouse.disableContextMenu();
+       //this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
@@ -102,8 +101,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
             element.on('pointerdown', (pointer,gameObject) =>{
                 if (pointer.rightButtonDown() && element.onHand)
                 {
+                    element.input.enabled = false;
                     this.room.send(ClientMessage.CardFlip,{id: element.id, onHand: element.onHand})
                     element.flip()
+                    element.input.enabled = true;
                 }
             });
             element.id = id;
@@ -185,6 +186,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.stichSet = true;
                     this.fiveCardsInHand = false;
                     this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});    
+                }
+                else if(gameObject.onHand == false){
+                    gameObject.x = gameObject.input.dragStartX;
+                    gameObject.y = gameObject.input.dragStartY;
                 }
                 else{
                     this.ownZone.addCard(gameObject);
