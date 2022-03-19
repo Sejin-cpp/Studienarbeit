@@ -102,6 +102,7 @@ export class GaigelRoom extends Room<GaigelState> {
     if(this.clientCount == 2){  //beim 1v1 startet das Spiel nachdem zwei Spieler gejoined sind
       this.turnCounter = Math.floor(Math.random() * 2);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
+      this.clients[this.turnCounter].send(ClientMessage.startTurn);
       this.clients[0].send(ClientMessage.setTrumpfColor);
       this.clients[1].send(ClientMessage.UpdateDeckPosition);
     }

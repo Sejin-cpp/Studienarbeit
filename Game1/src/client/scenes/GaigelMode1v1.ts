@@ -6,6 +6,7 @@ import StateMachine from '../../statemachine/StateMachine'
 import {ClientMessage} from '../../types/ClientMessage'
 import CardZone from '../../gameObjects/Cardzone'
 import PlayerZone from '../../gameObjects/Playerzone'
+import Button from '../../gameObjects/Button'
 
 export default class GaigelMode1v1 extends Phaser.Scene
 {
@@ -26,6 +27,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private stichSet : boolean = false;
     private fiveCardsInHand : boolean = false;
     private text;
+    private button! : Button;
 	constructor()
 	{
 		super('hello-world')
@@ -80,6 +82,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.load.image('schellenUnter','assets/schellenUnter.png')
 
         this.load.image('cardback','assets/cardback.png')
+        this.load.image('button','assets/button.png')
     }
 
     async create()
@@ -238,6 +241,27 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
            });
         })
+
+        this.room.onMessage(ClientMessage.startTurn,(message) =>{
+           this.button = new Button({
+            scene: this,
+            x:this.centerX,
+            y:this.gameHeight-380,
+            text: 'Auf Dissle',
+            depth: 1,
+            texture: 'button',
+            scale: 0.7
+           })
+
+           this.button.on('pointerdown', (pointer,gameObject) =>{
+            if (pointer.leftButtonDown())
+            {
+                this.room.send(ClientMessage.AufDissle);
+                gameObject.destroy();
+            }
+        });
+        })
+
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
         this.room.onMessage(ClientMessage.firstTurn,(message) =>{
             this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
@@ -293,7 +317,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //legt zufällig eine Karte als 
         this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
-            this.text = null;                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
             this.cards[0].x = this.centerX-200;
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
@@ -302,7 +326,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.updateTrumpfColor,(message) =>{
-            this.text = null;               //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            this.text.destroy();               //entfernt den Text, welche den über die Spieleröffnung informiert hat
             this.cards.forEach(element => {
                 if(element.id == message.id){
                     element.x = this.centerX+200;

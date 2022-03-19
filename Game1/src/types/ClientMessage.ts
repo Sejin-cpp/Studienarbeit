@@ -14,5 +14,7 @@ export enum ClientMessage
     winStich,
     loseStich,
     firstTurn,
-    endGame
+    startTurn,
+    endGame,
+    AufDissle
 }
