@@ -25,6 +25,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private enemyZone! : PlayerZone;
     private stichZone! : CardZone;
     private stichSet : boolean = false;
+    private fiveCardsInHand : boolean = false;
     private text;
 	constructor()
 	{
@@ -176,12 +177,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.input.on('drop', (pointer, gameObject, target) => {
             if(!gameObject.draggable) return;
             if(target == this.stichZone.dropZone){
-                if(!this.stichSet){         //falls der Spieler bereits eine Karte auf dem Stich abgelegt hat, kommt die Karte auf die Hand zurück
+                if(!this.stichSet && this.fiveCardsInHand){         //falls der Spieler bereits eine Karte auf dem Stich abgelegt hat und nicht fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück
                     gameObject.x = target.x;
                     gameObject.y = target.y;
                     gameObject.input.enabled = false;
                     gameObject.onHand = false;
                     this.stichSet = true;
+                    this.fiveCardsInHand = false;
                     this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});    
                 }
                 else{
@@ -200,6 +202,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
                 this.ownZone.addCard(gameObject);
                 this.ownZone.updateCardPosition();
+                if(target.data.values.cards == 5){
+                    this.fiveCardsInHand = true;
+                }
                 gameObject.y = target.y;
                 gameObject.onHand = true;
                 this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});

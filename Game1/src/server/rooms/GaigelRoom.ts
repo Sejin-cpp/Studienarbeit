@@ -38,11 +38,12 @@ export class GaigelRoom extends Room<GaigelState> {
       })
     });
 
+    //dies wird ausgeführt, sobald ein Spieler eine Karte auf den akutellen Stich legt
     this.onMessage(ClientMessage.CardDropStichZone, (client, message) => {
       //console.log(message)
       var info = this.state.addCardToStich(client.sessionId,message.id);
       if(info != "NO"){
-        if(info != "OK"){
+        if(info != "OK"){ //Falls es sich bei diesem Zug um eine Spieleröffnung handelt, wird die Art der Spieleröffnung an alle Spieler gesendet
           this.broadcast(ClientMessage.firstTurn,info);
         }
         this.broadcast(ClientMessage.CardDropStichZone,message, {
@@ -55,15 +56,15 @@ export class GaigelRoom extends Room<GaigelState> {
         else{
           this.turnCounter++;
         }
-        if(this.state.countCardInStich == this.clients.length){
+        if(this.state.countCardInStich == this.clients.length){   //falls jeder Spieler eine Karte auf den Stich gelegt hat, wird der Gewinner ermittelt
           var zaehler = 0;
           var winner = this.state.calculateWinnerOfStich();
           this.clients.forEach(tempclient => {
             if(tempclient.sessionId == winner.Id){
               this.turnCounter = zaehler;
               console.log(winner.cards)
-              tempclient.send(ClientMessage.winStich,{cards: winner.cards})
-              tempclient.send(ClientMessage.YourTurn);
+              tempclient.send(ClientMessage.winStich,{cards: winner.cards}) //der Gewinner wird informiert und erhält als Info die Karten welche er gewonnen hat
+              tempclient.send(ClientMessage.YourTurn);                      //der Gewinner ist als nächstes dran
             }
             else{
               tempclient.send(ClientMessage.loseStich);
