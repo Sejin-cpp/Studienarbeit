@@ -257,9 +257,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
             if (pointer.leftButtonDown())
             {
                 this.room.send(ClientMessage.AufDissle);
-                gameObject.destroy();
+        
             }
         });
+        })
+
+        this.room.onMessage(ClientMessage.deleteButton,(message) =>{
+            this.button.destroy();
         })
 
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
@@ -311,6 +315,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
+            if(this.button){
+                this.button.destroy();
+            }
             this.cards.forEach(element => {
                 element.setDraggAble(false);
             })

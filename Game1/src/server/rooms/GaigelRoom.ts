@@ -6,8 +6,19 @@ export class GaigelRoom extends Room<GaigelState> {
   private clientCount = 0;
   private setCards = false;
   private turnCounter = 0;
+  private aufDisslePlayer! : Client;
+  private team1! : Client[];
+  private team2! : Client[];
   onCreate (options: any) {
     this.setState(new GaigelState())
+
+    this.onMessage(ClientMessage.AufDissle, (client, message) => {
+      console.log("AufDissle");
+      this.state.firstTurn = false;
+      this.aufDisslePlayer = client;
+      client.send(ClientMessage.deleteButton);
+      client.send(ClientMessage.YourTurn);
+  });
 
     //synchronisiere die Trumpffarbe mit den restlichen Clients
     this.onMessage(ClientMessage.updateTrumpfColor, (client, message) => {
@@ -33,6 +44,28 @@ export class GaigelRoom extends Room<GaigelState> {
 
     this.onMessage(ClientMessage.CardDropOwnZone, (client, message) => {
       this.state.addCardToPlayer(client.sessionId,message.id)
+      //überprüfe sobald eine Karte zu einer Spielerhand hinzugefügt wurde, ob ein Spieler auf Dissle spielt und 5 siebener auf der Hand hat
+      if(this.state.aufDissle){
+        if(this.state.testDissle()){
+          var playerIndex = this.team1.findIndex((client) => client == this.aufDisslePlayer);   //überprüfe in welchem Team sich der auf Dissle Spieler befindet, dieses Team gewinnt dann
+          if(playerIndex == -1){ 
+            this.team2.forEach(client => {
+              client.send(ClientMessage.youAreTheWinner);
+            })
+            this.team1.forEach(client => {
+              client.send(ClientMessage.youAreTheLoser);
+            })
+          }
+          else{
+            this.team1.forEach(client => {
+              client.send(ClientMessage.youAreTheWinner);
+            })
+            this.team2.forEach(client => {
+              client.send(ClientMessage.youAreTheLoser);
+            })
+          }
+        }
+      }
       this.broadcast(ClientMessage.CardDropOwnZone,message, {
         except: client
       })
@@ -45,6 +78,7 @@ export class GaigelRoom extends Room<GaigelState> {
       if(info != "NO"){
         if(info != "OK"){ //Falls es sich bei diesem Zug um eine Spieleröffnung handelt, wird die Art der Spieleröffnung an alle Spieler gesendet
           this.broadcast(ClientMessage.firstTurn,info);
+          client.send(ClientMessage.deleteButton);
         }
         this.broadcast(ClientMessage.CardDropStichZone,message, {
           except: client
@@ -59,25 +93,63 @@ export class GaigelRoom extends Room<GaigelState> {
         if(this.state.countCardInStich == this.clients.length){   //falls jeder Spieler eine Karte auf den Stich gelegt hat, wird der Gewinner ermittelt
           var zaehler = 0;
           var winner = this.state.calculateWinnerOfStich();
-          this.clients.forEach(tempclient => {
-            if(tempclient.sessionId == winner.Id){
-              this.turnCounter = zaehler;
-              console.log(winner.cards)
-              tempclient.send(ClientMessage.winStich,{cards: winner.cards}) //der Gewinner wird informiert und erhält als Info die Karten welche er gewonnen hat
-              tempclient.send(ClientMessage.YourTurn);                      //der Gewinner ist als nächstes dran
+          //falls der Spieler, welcher auf Dissle geht, einen Stich gewonnen hat, verliert sein Team
+          if(winner.status == "NoDissle"){
+            var playerIndex = this.team1.findIndex((client) => client == this.aufDisslePlayer);   //überprüfe in welchem Team sich der auf Dissle Spieler befindet, dieses Team gewinnt dann
+            if(playerIndex == -1){ 
+              this.team1.forEach(client => {
+                client.send(ClientMessage.youAreTheWinner);
+              })
+              this.team2.forEach(client => {
+                client.send(ClientMessage.youAreTheLoser);
+              })
             }
             else{
-              tempclient.send(ClientMessage.loseStich);
+              this.team2.forEach(client => {
+                client.send(ClientMessage.youAreTheWinner);
+              })
+              this.team1.forEach(client => {
+                client.send(ClientMessage.youAreTheLoser);
+              })
             }
-            zaehler++;
-          })
+          }
+          else if(winner.status == "OK"){
+            this.clients.forEach(tempclient => {
+              if(tempclient.sessionId == winner.Id){
+                this.turnCounter = zaehler;
+                console.log(winner.cards)
+                tempclient.send(ClientMessage.winStich,{cards: winner.cards}) //der Gewinner wird informiert und erhält als Info die Karten welche er gewonnen hat
+                tempclient.send(ClientMessage.YourTurn);                      //der Gewinner ist als nächstes dran
+              }
+              else{
+                tempclient.send(ClientMessage.loseStich);
+              }
+              zaehler++;
+            })
+          }
         }
         else{
           this.clients[this.turnCounter].send(ClientMessage.YourTurn);
         }
       }
-      if(this.state.testIfEndGame()){
-        this.state.calculateWinner();
+      if(this.state.testIfEndGame()){       //teste ob das Spiel vorbei ist
+        var teamNr = this.state.calculateWinner();    //ermittele das Team welches gewonnen hat und sende allen Spieler die Info, ob sie gewonnen oder verloren haben
+        if(teamNr.WinnerTeam == 1){
+          this.team1.forEach(client => {
+            client.send(ClientMessage.youAreTheWinner);
+          })
+          this.team2.forEach(client => {
+            client.send(ClientMessage.youAreTheLoser);
+          })
+        }
+        else{
+          this.team2.forEach(client => {
+            client.send(ClientMessage.youAreTheWinner);
+          })
+          this.team1.forEach(client => {
+            client.send(ClientMessage.youAreTheLoser);
+          })
+        }
       }
     });
 
@@ -93,6 +165,12 @@ export class GaigelRoom extends Room<GaigelState> {
   onJoin (client: Client, options: any) {
     
     this.state.addPlayer(client.sessionId,this.clientCount+1)
+    if(this.clientCount % 2 == 0){
+      this.team1.push(client);
+    }
+    else{
+      this.team2.push(client);
+    }
     this.clientCount++;
     if(this.setCards == false){
       this.state.setCardsInDeck();

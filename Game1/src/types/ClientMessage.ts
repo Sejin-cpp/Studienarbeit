@@ -15,6 +15,9 @@ export enum ClientMessage
     loseStich,
     firstTurn,
     startTurn,
+    deleteButton,
     endGame,
-    AufDissle
+    AufDissle,
+    youAreTheWinner,
+    youAreTheLoser,
 }

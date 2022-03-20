@@ -116,6 +116,9 @@ export class GaigelState extends Schema
   @type('string')
   firstStich : string
 
+  @type('boolean')
+  aufDissle : boolean
+
   constructor()
   {
     super()
@@ -126,6 +129,7 @@ export class GaigelState extends Schema
     this.countCardInStich = 0;
     this.firstTurn = true;
     this.firstStich = "";
+    this.aufDissle = false;
   }
   addPlayer(id : string, team : number)
   {
@@ -211,7 +215,7 @@ export class GaigelState extends Schema
   addCardToPlayer(playerid :string,cardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
     var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
-    if(cardIndex == -1){                             //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte zur Spielerhadn zugefügt und aus dem Deck gelöscht
+    if(cardIndex == -1){                             //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte zur Spielerhand zugefügt und aus dem Deck gelöscht
       cardIndex = this.cardsInDeck.findIndex((cardstate) => cardstate.id == cardid);
       this.playerstates[playerIndex].addCardInHand(this.cardsInDeck[cardIndex]);
       this.cardsInDeck.splice(cardIndex,1);
@@ -220,11 +224,31 @@ export class GaigelState extends Schema
       return
     }
   }
+  //diese Methode speichert den Spieler, welcher auf Dissle geht und vermerkt dass in diesem Spiel ein Spieler auf Dissle geht
+  playerAufDissle(playerid :string){  
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    this.aufDissle = true;
+    this.firstPlayerinFirstTurn = this.playerstates[playerIndex];
+  }
+
+  testDissle(){
+    var zaehler = 0;
+    this.firstPlayerinFirstTurn.cardsInHand.forEach(card => {
+      if(card.value == 0){
+        zaehler++;
+      }
+    })
+    if(zaehler == 5){
+      return true;
+    }
+    return false;
+  }
+
   //diese Methode fügt eine Karte dem aktuellen Stich hinzu und entfernt die Karte aus der Hand des Spielers, welcher sie gelegt hat
   addCardToStich(playerid :string,cardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
     if(this.playerstates[playerIndex].cardInStich.id == 0){                                                      //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
-      var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);  //suche die Karte aus der Spielerhadn heraus
+      var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);  //suche die Karte aus der Spielerhand heraus
       this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
       this.playerstates[playerIndex].removeCardFromHand(cardIndex);
       this.countCardInStich++;
@@ -295,13 +319,17 @@ export class GaigelState extends Schema
       this.possibleWinners.forEach(player => {
         if(tempValue < player.cardInStich.value){
           tempValue= player.cardInStich.value;
-          winner = player
+          winner = player;
         }
       })
     }
     console.log("Der Stich wurde gewonnen von:");
     console.log(winner.id);
-    
+    if(this.aufDissle){   //falls auf Dissle gespielt wird und dieser Spieler einen Stich gewonnen hat, verliert sein Team das Spiel
+      if(winner == this.firstPlayerinFirstTurn){
+        return {status: "NoDissle"}
+      }
+    }
     //füge den gewonnen Stich zum Gewinner hinzu und setzte den Stich zurück
     var i = 0;
     this.playerstates.forEach(player => {
@@ -311,7 +339,7 @@ export class GaigelState extends Schema
       i++;
     })
     this.countCardInStich = 0;
-    return {Id: winner.id, cards: cardIDs};
+    return {Id: winner.id, cards: cardIDs, status: "OK"};
   
     
   }
@@ -340,7 +368,7 @@ export class GaigelState extends Schema
   }
 
   calculateWinner(){
-    var teams : number[] = [0,0,0];
+    var teams : number[] = [0,0];
     this.playerstates.forEach(player => {
       player.cardsWon.forEach(card => {
         teams[player.team-1] += card.value
@@ -356,7 +384,7 @@ export class GaigelState extends Schema
       }
       zaehler++;
     })
-
+    return {WinnerTeam: winnerTeam}
     console.log("Team ",winnerTeam," wins!");
   }
   
