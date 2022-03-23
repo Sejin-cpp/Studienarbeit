@@ -7,17 +7,21 @@ export class GaigelRoom extends Room<GaigelState> {
   private setCards = false;
   private turnCounter = 0;
   private aufDisslePlayer! : Client;
-  private team1! : Client[];
-  private team2! : Client[];
+  private trumpfColorSet : boolean = false;
+  private team1 : Client[] = new Array<Client>();
+  private team2 : Client[] = new Array<Client>();
   onCreate (options: any) {
-    this.setState(new GaigelState())
-
+    this.setState(new GaigelState());
+    //wenn der Eröffnungsspieler sich entscheidet auf Dissle zu spielen, wird dieser Spieler gespeichert
     this.onMessage(ClientMessage.AufDissle, (client, message) => {
       console.log("AufDissle");
       this.state.firstTurn = false;
       this.aufDisslePlayer = client;
+      this.state.playerAufDissle(client.sessionId);
       client.send(ClientMessage.deleteButton);
       client.send(ClientMessage.YourTurn);
+      this.clients[0].send(ClientMessage.setTrumpfColor);
+      this.trumpfColorSet = true;
   });
 
     //synchronisiere die Trumpffarbe mit den restlichen Clients
@@ -93,9 +97,13 @@ export class GaigelRoom extends Room<GaigelState> {
         if(this.state.countCardInStich == this.clients.length){   //falls jeder Spieler eine Karte auf den Stich gelegt hat, wird der Gewinner ermittelt
           var zaehler = 0;
           var winner = this.state.calculateWinnerOfStich();
+          if(this.trumpfColorSet == false){                        //setze eine Trumpffarbe, falls bisher noch keine festgelegt wurde
+            this.trumpfColorSet = true;
+            this.clients[0].send(ClientMessage.setTrumpfColor);
+          }
           //falls der Spieler, welcher auf Dissle geht, einen Stich gewonnen hat, verliert sein Team
           if(winner.status == "NoDissle"){
-            var playerIndex = this.team1.findIndex((client) => client == this.aufDisslePlayer);   //überprüfe in welchem Team sich der auf Dissle Spieler befindet, dieses Team gewinnt dann
+            var playerIndex = this.team1.findIndex((client) => client == this.aufDisslePlayer);   //überprüfe in welchem Team sich der auf Dissle Spieler befindet, dieses Team verliert dann
             if(playerIndex == -1){ 
               this.team1.forEach(client => {
                 client.send(ClientMessage.youAreTheWinner);
@@ -181,7 +189,7 @@ export class GaigelRoom extends Room<GaigelState> {
       this.turnCounter = Math.floor(Math.random() * 2);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
-      this.clients[0].send(ClientMessage.setTrumpfColor);
+      
       this.clients[1].send(ClientMessage.UpdateDeckPosition);
     }
     console.log(client.sessionId, "joined!")

@@ -254,15 +254,17 @@ export default class GaigelMode1v1 extends Phaser.Scene
            })
 
            this.button.on('pointerdown', (pointer,gameObject) =>{
-            if (pointer.leftButtonDown())
-            {
+            //if (pointer.leftButtonDown())
+            //{
+                console.log("ButtonClicked")
                 this.room.send(ClientMessage.AufDissle);
         
-            }
+            //}
         });
         })
 
         this.room.onMessage(ClientMessage.deleteButton,(message) =>{
+            this.button.text.destroy();
             this.button.destroy();
         })
 
@@ -343,7 +345,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
             })
         })
-
+        //falls der Server den Spieler benachrichtig, dass er den Stich gewonnen hat, wird der Aktuelle Stich auf seinen Stapel an gewonnen Karten gelegt
         this.room.onMessage(ClientMessage.winStich,(message) =>{
             this.stichSet = false;
             message.cards.forEach(id => {
