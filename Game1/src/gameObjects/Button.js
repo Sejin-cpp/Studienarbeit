@@ -14,5 +14,6 @@ export default class Button extends Phaser.GameObjects.Sprite{
         this.text = this.scene.add.text(x-80,y-10,text,{ font: "36px Arial" });
         this.text.depth = this.depth+1;
         this.text.setColor('purple');
+        this.setInteractive();
     }
 }

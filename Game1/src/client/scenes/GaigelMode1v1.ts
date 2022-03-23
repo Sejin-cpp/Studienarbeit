@@ -326,7 +326,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //legt zufällig eine Karte als 
         this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
-            this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            if(this.text){
+                this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            }
             this.cards[0].x = this.centerX-200;
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
@@ -335,7 +337,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.updateTrumpfColor,(message) =>{
-            this.text.destroy();               //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            if(this.text){
+                this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            }               
             this.cards.forEach(element => {
                 if(element.id == message.id){
                     element.x = this.centerX+200;

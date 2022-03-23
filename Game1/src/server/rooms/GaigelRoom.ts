@@ -111,6 +111,7 @@ export class GaigelRoom extends Room<GaigelState> {
               this.team2.forEach(client => {
                 client.send(ClientMessage.youAreTheLoser);
               })
+              console.log("Team1 wins");
             }
             else{
               this.team2.forEach(client => {
@@ -119,7 +120,9 @@ export class GaigelRoom extends Room<GaigelState> {
               this.team1.forEach(client => {
                 client.send(ClientMessage.youAreTheLoser);
               })
+              console.log("Team2 wins");
             }
+            
           }
           else if(winner.status == "OK"){
             this.clients.forEach(tempclient => {
@@ -158,6 +161,7 @@ export class GaigelRoom extends Room<GaigelState> {
             client.send(ClientMessage.youAreTheLoser);
           })
         }
+    
       }
     });
 
