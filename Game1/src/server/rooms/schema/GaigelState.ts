@@ -50,6 +50,9 @@ class PlayerState extends Schema
 
   @type('number')
   team : number  
+
+  @type('number')
+  turnOrder : number 
   
   @type([CardState])
   cardsInHand: CardState[]
@@ -68,6 +71,7 @@ class PlayerState extends Schema
     this.cardsWon = new ArraySchema <CardState>()
     this.team = team
     this.cardInStich = new CardState(0,"x","x",0);
+    this.turnOrder = 0;
   }
   addCardInHand(card: CardState){
     this.cardsInHand.push(card)
@@ -109,6 +113,9 @@ export class GaigelState extends Schema
 
   @type('number')
   countCardInStich : number
+
+  @type('number')
+  turnOrder : number = 1
 
   @type('string')
   trumpfColor! : string
@@ -250,10 +257,12 @@ export class GaigelState extends Schema
     if(this.playerstates[playerIndex].cardInStich.id == 0){                                                      //falls noch keine Karte von diesem Spieler sich im Stich befindet, wird diese dem Stich hinzugefügt
       var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);  //suche die Karte aus der Spielerhand heraus
       this.playerstates[playerIndex].addCardToStich(this.playerstates[playerIndex].cardsInHand[cardIndex]);
-      this.playerstates[playerIndex].removeCardFromHand(cardIndex);
-      this.countCardInStich++;
-      if(this.countCardInStich == 1 && this.firstTurn){     //beim ersten Stich und bei der ersten Karte, wird je nach Karte die Art der Spieleröffnung bestimmt
-        var tempCard : CardState = this.playerstates[playerIndex].cardInStich;
+      this.playerstates[playerIndex].removeCardFromHand(cardIndex);                                           //entferne die Karte aus der Spielerklasse
+      this.playerstates[playerIndex].turnOrder = this.turnOrder;                                              //speichere ab, wann der Spieler dran war
+      this.turnOrder++;
+      this.countCardInStich++;                                                                                //aktualisiere die akutelle Anzahl der Karten im aktuellen Stich
+      if(this.countCardInStich == 1 && this.firstTurn){     //beim ersten Stich und bei der ersten Karte, wird je nach K  arte die Art der Spieleröffnung bestimmt
+        var tempCard : CardState = this.playerstates[playerIndex].cardInStich;  
         this.firstPlayerinFirstTurn = this.playerstates[playerIndex];   //speichere den ersten Spieler
         if(tempCard.symbol == "ass" && tempCard.hidden){   //Andere Alte
           this.firstStich = "AndereAlte";
@@ -275,9 +284,10 @@ export class GaigelState extends Schema
   }
 
   calculateWinnerOfStich(){
+    this.turnOrder = 1;
     this.possibleWinners = new ArraySchema<PlayerState>();
     var winner! : PlayerState;
-    var tempValue = 0;
+    var tempValue = -1;
     var cardIDs : number[] = [0];
     // bei einem Eröffnungsspiel hängt der Sieger davon ab, welche Karte als Erstes geworfen wurde
     if(this.firstTurn){
@@ -320,6 +330,12 @@ export class GaigelState extends Schema
         if(tempValue < player.cardInStich.value){
           tempValue= player.cardInStich.value;
           winner = player;
+        }
+        else if(tempValue == player.cardInStich.value){
+          if(winner.turnOrder > player.turnOrder){      //bei Karten mit gleichem Wert gewinnt der Spieler, welcher früher eine Karte gelegt hat
+            tempValue= player.cardInStich.value;
+            winner = player;
+          }
         }
       })
     }
@@ -385,7 +401,6 @@ export class GaigelState extends Schema
       zaehler++;
     })
     return {WinnerTeam: winnerTeam}
-    console.log("Team ",winnerTeam," wins!");
   }
   
 }

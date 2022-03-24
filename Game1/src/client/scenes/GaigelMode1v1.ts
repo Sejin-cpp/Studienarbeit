@@ -38,12 +38,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
     init()
     {
         this.client = new Colyseus.Client('ws://localhost:2567')
-        this.stateMachine = new StateMachine(this, 'game')
-        this.stateMachine.addState('idle')
-            .addState('cardMove', {
-                onUpdate: this.cardMoveUpdate
-            })
-            .setState('idle')
     }
 
 	preload()
@@ -134,7 +128,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
        //beim Start eines drags einer Karte mit dem Mauszeiger, wird diese Funktion ausgeführt
        this.input.on('dragstart',(pointer,gameObject) =>{
             if(!gameObject.draggable) return;
-            this.stateMachine.setState('cardMove');
+            //this.stateMachine.setState('cardMove');
             this.tempCard = gameObject;
             if(gameObject.onHand == true){  //wahr falls sich die Karte auf deiner Hand befand
                 this.ownZone.removeCard(gameObject);    //entferne Karte aus deiner Hand
@@ -172,7 +166,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }
             }
-            this.stateMachine.setState('idle');
             this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
 
             
@@ -369,10 +362,14 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.room.onMessage(ClientMessage.loseStich,(message) =>{
             this.stichSet = false;
         })
-    }
 
-    private cardMoveUpdate(){
-        this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id})
+        this.room.onMessage(ClientMessage.youAreTheWinner,(message) =>{
+            this.text = this.add.text(this.centerX-120,this.centerY+270,"You Won",{ font: "60px Arial" });
+        })
+
+        this.room.onMessage(ClientMessage.youAreTheLoser,(message) =>{
+            this.text = this.add.text(this.centerX-120,this.centerY+270,"You Lose",{ font: "60px Arial" });
+        })
     }
 
     createCardObjects(){
@@ -731,7 +728,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
     update(t: number, dt: number)
     {
-        this.stateMachine.update(dt)
         
     }
 }
