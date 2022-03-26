@@ -2,7 +2,6 @@ import Phaser from 'phaser'
 import * as Colyseus from 'colyseus.js'
 import { GaigelState } from '../../server/rooms/schema/GaigelState'
 import CardDraggable from '../../gameObjects/CardDraggable'
-import StateMachine from '../../statemachine/StateMachine'
 import {ClientMessage} from '../../types/ClientMessage'
 import CardZone from '../../gameObjects/Cardzone'
 import PlayerZone from '../../gameObjects/Playerzone'
@@ -12,7 +11,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
 {
     private client!: Colyseus.Client
     private cards : CardDraggable[]
-    private stateMachine! : StateMachine
     private room!: Colyseus.Room<GaigelState>
     private tempCard!:  CardDraggable
     private trumpfCard!:  CardDraggable
@@ -766,6 +764,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 //height: 100
             }))
         }
+    }
+
+    testForMelden(){
+
     }
 
     update(t: number, dt: number)
