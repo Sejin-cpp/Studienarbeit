@@ -20,4 +20,5 @@ export enum ClientMessage
     AufDissle,
     youAreTheWinner,
     youAreTheLoser,
+    stealTrumpf,
 }

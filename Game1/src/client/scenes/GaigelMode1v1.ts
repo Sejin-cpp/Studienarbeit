@@ -15,6 +15,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private stateMachine! : StateMachine
     private room!: Colyseus.Room<GaigelState>
     private tempCard!:  CardDraggable
+    private trumpfCard!:  CardDraggable
     private cardx = 0;
     private cardy = 0;
     private gameWidth;
@@ -174,7 +175,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.input.on('drop', (pointer, gameObject, target) => {
             if(!gameObject.draggable) return;
             if(target == this.stichZone.dropZone){
-                if(!this.stichSet && this.fiveCardsInHand){         //falls der Spieler bereits eine Karte auf dem Stich abgelegt hat und nicht fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück
+                if(!this.stichSet && this.fiveCardsInHand){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück
                     gameObject.x = target.x;
                     gameObject.y = target.y;
                     gameObject.input.enabled = false;
@@ -209,6 +210,23 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 gameObject.y = target.y;
                 gameObject.onHand = true;
                 this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+            }
+            else if(target == this.trumpfCard){                 //falls ein Spieler eine Karte auf der Trumpfkarte ablegt, wird überprüft, ob ein Raub stattfinden kann
+                if(gameObject.color == this.trumpfCard.color && gameObject.value == 0){         //die Farbe muss übereinstimmen und es muss sich um eine sieben handeln
+                   //füge die Trumpfkarte zur eigenen Zone hinzu
+                    this.ownZone.addCard(this.trumpfCard);
+                    this.ownZone.updateCardPosition();
+                    this.trumpfCard.y = gameObject.y;
+                    this.trumpfCard.onHand = true;
+                    this.trumpfCard.input.enabled = true;
+                    //lege die abgelegte Karte als neue Trumpfkarte fest
+                    gameObject.x = this.trumpfCard.x;
+                    gameObject.y = this.trumpfCard.y;
+                    gameObject.onHand = false;
+                    gameObject.input.enabled = false;
+                    this.room.send(ClientMessage.stealTrumpf, {newTrumpf: gameObject.id, oldTrumpf: this.trumpfCard.id, oldTrumpfX: this.trumpfCard.x, oldTrumpfY: this.trumpfCard.y});
+                    this.trumpfCard = gameObject;
+                }
             }
         });
 
@@ -317,7 +335,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 element.setDraggAble(false);
             })
         })
-        //legt zufällig eine Karte als 
+        //legt die erste Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
             if(this.text){
                 this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
@@ -326,6 +344,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
             this.cards[0].input.enabled = false;
+            this.trumpfCard = this.cards[0];    	  //speichere Trumpfkarte
             this.room.send(ClientMessage.updateTrumpfColor,{id:this.cards[0].id, color: this.cards[0].color})
         })
         //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
@@ -339,10 +358,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     element.y = this.centerY;
                     element.setTexture(element.cardname)
                     element.input.enabled = false;
+                    this.trumpfCard = element;          //speichere die Trumpfkarte
                 }
             })
         })
-        //falls der Server den Spieler benachrichtig, dass er den Stich gewonnen hat, wird der Aktuelle Stich auf seinen Stapel an gewonnen Karten gelegt
+        //falls der Server den Spieler benachrichtigt, dass er den Stich gewonnen hat, wird der aktuelle Stich auf seinen Stapel an gewonnen Karten gelegt
         this.room.onMessage(ClientMessage.winStich,(message) =>{
             this.stichSet = false;
             message.cards.forEach(id => {
@@ -354,6 +374,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         card.input.enabled = false;
                         console.log(id);
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
+                        console.log(card.x);
+                        console.log(card.y);
                     }
                 })     
             });
@@ -361,6 +383,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.room.onMessage(ClientMessage.loseStich,(message) =>{
             this.stichSet = false;
+            console.log("LOSE");
         })
 
         this.room.onMessage(ClientMessage.youAreTheWinner,(message) =>{
@@ -369,6 +392,25 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.room.onMessage(ClientMessage.youAreTheLoser,(message) =>{
             this.text = this.add.text(this.centerX-120,this.centerY+270,"You Lose",{ font: "60px Arial" });
+        })
+
+        this.room.onMessage(ClientMessage.stealTrumpf,(message) =>{
+            var oldTrumpf! : CardDraggable;
+            this.cards.forEach(card => {
+                if(card.id == message.newTrumpf){
+                    this.trumpfCard = card;
+                }
+                if(card.id == message.oldTrumpf){
+                    oldTrumpf = card;
+                }
+            })
+            //vertausche die Position der beiden Karten
+            this.trumpfCard.x = oldTrumpf.x;
+            this.trumpfCard.y = oldTrumpf.y;
+            oldTrumpf.x = message.oldTrumpfX;
+            oldTrumpf.y = message.oldTrumpfY;
+            oldTrumpf.setTexture(oldTrumpf.cardback);
+            
         })
     }
 

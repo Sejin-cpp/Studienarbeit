@@ -172,6 +172,13 @@ export class GaigelRoom extends Room<GaigelState> {
       })
     });
 
+    this.onMessage(ClientMessage.stealTrumpf, (client, message) => {
+      //console.log(message)
+      this.broadcast(ClientMessage.stealTrumpf,message, {
+        except: client
+      })
+    });
+
   }
 
   onJoin (client: Client, options: any) {
