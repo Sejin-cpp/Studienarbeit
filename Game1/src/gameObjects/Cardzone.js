@@ -28,26 +28,69 @@ export default class CardZone {
         var blattArray = [];
         var herzArray = [];
         var schellenArray = [];
+        var eichelKing = false;
+        var blattKing = false;
+        var herzKing = false;
+        var schellenKing = false;
+        var eichelMatch = false;
+        var blattMatch = false;
+        var herzMatch = false;
+        var schellenMatch = false;
         this.cards.forEach(card => { 
-            if(card.symbol == "ober" || card.symbol == "koenig"){
+            if(card.symbol == "koenig"){
                 switch(card.symbol){
                     case "eichel":
-                        eichelArray.push(card.id);
+                        eichelArray.push(card);
+                        eichelKing = true;
                         break;
                     case "blatt":
-                        blattArray.push(card.id);
+                        blattKing = true;
+                        blattArray.push(card);
                         break;
                     case "herz":
-                        herzArray.push(card.id);
+                        herzKing = true;
+                        herzArray.push(card);
                         break;
                     case "schellen":
-                        schellenArray.push(card.id);
+                        schellenKing = true;
+                        schellenArray.push(card);
+                        break;
+                    default:
+                }
+            }
+        })
+        this.cards.forEach(card => { 
+            if(card.symbol == "ober"){
+                switch(card.symbol){
+                    case "eichel":
+                        if(eichelKing){
+                            eichelArray.push(card);
+                            eichelMatch = true;
+                        }
+                        break;
+                    case "blatt":
+                        if(blattKing){
+                            eichelArray.push(card);
+                            blattMatch = true;
+                        }
+                        break;
+                    case "herz":
+                        if(herzKing){
+                            eichelArray.push(card);
+                            herzMatch = true;
+                        }
+                        break;
+                    case "schellen":
+                        if(schellenKing){
+                            eichelArray.push(card);
+                            schellenMatch = true;
+                        }
                         break;
                     default:
                 }
             }
         })
 
-        return {eichel: eichelArray, blatt: blattArray, herz: herzArray, schellen: schellenArray}
+        return {eichelMatch: eichelMatch, eichel: eichelArray, blattMatch: blattMatch, blatt: blattArray,herzMatch: herzMatch, herz: herzArray, schellenMatch: schellenMatch, schellen: schellenArray}
     }
 }

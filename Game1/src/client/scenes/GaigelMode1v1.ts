@@ -27,6 +27,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private fiveCardsInHand : boolean = false;
     private text;
     private button! : Button;
+    private eichelMeldenButton! : Button;
+    private blattMeldenButton! : Button;
+    private herzMeldenButton! : Button;
+    private schellenMeldenButton! : Button;
 	constructor()
 	{
 		super('hello-world')
@@ -767,7 +771,71 @@ export default class GaigelMode1v1 extends Phaser.Scene
     }
 
     testForMelden(){
-        
+        var info = this.ownZone.testIfMelden()
+        var x = 0;
+        if(info.eichelMatch){
+            this.eichelMeldenButton = new Button({
+                scene: this,
+                x:this.centerX,
+                y:this.gameHeight-380,
+                text: 'MeldeEichel',
+                depth: 1,
+                texture: 'button',
+                scale: 0.7
+            })
+            this.eichelMeldenButton.on('pointerdown', (pointer,gameObject) =>{
+                console.log("ButtonClicked")
+                //this.room.send(ClientMessage.AufDissle);
+            });
+        }
+
+        if(info.blattMatch){
+            this.blattMeldenButton = new Button({
+                scene: this,
+                x:this.centerX,
+                y:this.gameHeight-380,
+                text: 'MeldeBlatt',
+                depth: 1,
+                texture: 'button',
+                scale: 0.7
+            })
+            this.blattMeldenButton.on('pointerdown', (pointer,gameObject) =>{
+                console.log("ButtonClicked")
+                //this.room.send(ClientMessage.AufDissle);
+            });
+        }
+
+        if(info.herzMatch){
+            this.herzMeldenButton = new Button({
+                scene: this,
+                x:this.centerX,
+                y:this.gameHeight-380,
+                text: 'MeldeHerz',
+                depth: 1,
+                texture: 'button',
+                scale: 0.7
+            })
+            this.herzMeldenButton.on('pointerdown', (pointer,gameObject) =>{
+                console.log("ButtonClicked")
+                //this.room.send(ClientMessage.AufDissle);
+            });
+        }
+
+        if(info.schellenMatch){
+            this.schellenMeldenButton = new Button({
+                scene: this,
+                x:this.centerX,
+                y:this.gameHeight-380,
+                text: 'MeldeSchelle',
+                depth: 1,
+                texture: 'button',
+                scale: 0.7
+            })
+            this.schellenMeldenButton.on('pointerdown', (pointer,gameObject) =>{
+                console.log("ButtonClicked")
+                //this.room.send(ClientMessage.AufDissle);
+            });
+        }
     }
 
     update(t: number, dt: number)
