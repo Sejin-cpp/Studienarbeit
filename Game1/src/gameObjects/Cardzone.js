@@ -15,12 +15,39 @@ export default class CardZone {
     addCard(card){
         this.dropZone.data.values.cards++;
         this.cards.push(card);
-        console.log(this.cards)
     }
 
     removeCard(card){
         this.dropZone.data.values.cards--;
         var cardIndex = this.cards.findIndex((tempCard) => card.id == tempCard.id);
         this.cards.splice(cardIndex,1)
+    }
+
+    testIfMelden(){
+        var eichelArray = [];
+        var blattArray = [];
+        var herzArray = [];
+        var schellenArray = [];
+        this.cards.forEach(card => { 
+            if(card.symbol == "ober" || card.symbol == "koenig"){
+                switch(card.symbol){
+                    case "eichel":
+                        eichelArray.push(card.id);
+                        break;
+                    case "blatt":
+                        blattArray.push(card.id);
+                        break;
+                    case "herz":
+                        herzArray.push(card.id);
+                        break;
+                    case "schellen":
+                        schellenArray.push(card.id);
+                        break;
+                    default:
+                }
+            }
+        })
+
+        return {eichel: eichelArray, blatt: blattArray, herz: herzArray, schellen: schellenArray}
     }
 }

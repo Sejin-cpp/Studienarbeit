@@ -767,7 +767,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     }
 
     testForMelden(){
-
+        
     }
 
     update(t: number, dt: number)
