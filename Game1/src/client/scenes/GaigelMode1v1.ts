@@ -86,7 +86,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     async create()
     {
        
-       //this.input.mouse.disableContextMenu();
+       this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
@@ -177,7 +177,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //Eigen gezogene Karten können nur auf dem Stich oder auf der eigenen Hand abgelegt werden
         this.input.on('drop', (pointer, gameObject, target) => {
             if(!gameObject.draggable) return;
-            console.log(target);
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
                 if(!this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass"))){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf
@@ -221,22 +220,33 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
             }
             //----------------------------RAUB--------------------------------------------------------------------------------------//
-            else if(target == this.trumpfCard){                 //falls ein Spieler eine Karte auf der Trumpfkarte ablegt, wird überprüft, ob ein Raub stattfinden kann
+            else if(target == this.trumpfCard && this.fiveCardsInHand){                 //falls ein Spieler eine Karte auf der Trumpfkarte ablegt, wird überprüft, ob ein Raub stattfinden kann
                 console.log("Raub");
                 if(gameObject.color == this.trumpfCard.color && gameObject.value == 0){         //die Farbe muss übereinstimmen und es muss sich um eine sieben handeln
+                    var tempx = this.trumpfCard.x;
+                    var tempy = this.trumpfCard.y;
                    //füge die Trumpfkarte zur eigenen Zone hinzu
                     this.ownZone.addCard(this.trumpfCard);
+                    this.trumpfCard.y = this.ownZone.dropZone.y;
                     this.ownZone.updateCardPosition();
-                    this.trumpfCard.y = gameObject.y;
                     this.trumpfCard.onHand = true;
-                    this.trumpfCard.input.enabled = true;
+                    this.trumpfCard.draggable = true;
+                    this.trumpfCard.setInteractive(undefined,undefined,false);
                     //lege die abgelegte Karte als neue Trumpfkarte fest
-                    gameObject.x = this.trumpfCard.x;
-                    gameObject.y = this.trumpfCard.y;
+                    gameObject.x = tempx;
+                    gameObject.y = tempy;
                     gameObject.onHand = false;
-                    gameObject.input.enabled = false;
+                    gameObject.draggable = false;
+                    gameObject.setInteractive(undefined,undefined,true);
                     this.room.send(ClientMessage.stealTrumpf, {newTrumpf: gameObject.id, oldTrumpf: this.trumpfCard.id, oldTrumpfX: this.trumpfCard.x, oldTrumpfY: this.trumpfCard.y});
+                    this.room.send(ClientMessage.CardMove, {card:this.trumpfCard, id:this.trumpfCard.id});
                     this.trumpfCard = gameObject;
+                }
+                else{
+                    this.ownZone.addCard(gameObject);
+                    this.ownZone.updateCardPosition();
+                    gameObject.y = this.ownZone.dropZone.y;
+                    this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }
             }
         });
@@ -330,7 +340,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
         this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id){
-                    console.log(message.texture);
                     element.setTexture(message.card.textureKey);
                 }
             });
@@ -359,8 +368,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.cards[0].x = this.centerX-200;
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
-            this.cards[0].input.enabled = false;
             this.trumpfCard = this.cards[0];    	  //speichere Trumpfkarte
+            this.cards[0].setInteractive(undefined,undefined,true);
+            this.cards[0].draggable = false;
             this.room.send(ClientMessage.updateTrumpfColor,{id:this.cards[0].id, color: this.cards[0].color})
         })
         //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
@@ -373,7 +383,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     element.x = this.centerX+200;
                     element.y = this.centerY;
                     element.setTexture(element.cardname)
-                    element.input.enabled = false;
+                    element.setInteractive(undefined,undefined,true);
+                    element.draggable = false;
                     this.trumpfCard = element;          //speichere die Trumpfkarte
                 }
             })
@@ -431,8 +442,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
             //vertausche die Position der beiden Karten
             this.trumpfCard.x = oldTrumpf.x;
             this.trumpfCard.y = oldTrumpf.y;
-            oldTrumpf.x = message.oldTrumpfX;
-            oldTrumpf.y = message.oldTrumpfY;
+            this.trumpfCard.draggable = false;
+            this.trumpfCard.setInteractive(undefined,undefined,true);
+            oldTrumpf.draggable = false;
+            oldTrumpf.setInteractive(undefined,undefined,false);
             oldTrumpf.setTexture(oldTrumpf.cardback);
             
         })
