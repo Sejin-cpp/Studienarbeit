@@ -13,7 +13,7 @@ export enum ClientMessage
     updateTrumpfColor,
     winStich,
     loseStich,
-    firstTurn,
+    secondTurn,
     startTurn,
     deleteButton,
     endGame,
@@ -21,4 +21,5 @@ export enum ClientMessage
     youAreTheWinner,
     youAreTheLoser,
     stealTrumpf,
+    melden,
 }

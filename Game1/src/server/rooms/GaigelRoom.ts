@@ -81,7 +81,7 @@ export class GaigelRoom extends Room<GaigelState> {
       var info = this.state.addCardToStich(client.sessionId,message.id);
       if(info != "NO"){
         if(info != "OK"){ //Falls es sich bei diesem Zug um eine Spieleröffnung handelt, wird die Art der Spieleröffnung an alle Spieler gesendet
-          this.broadcast(ClientMessage.firstTurn,info);
+          this.broadcast(ClientMessage.secondTurn,info);
           client.send(ClientMessage.deleteButton);
         }
         this.broadcast(ClientMessage.CardDropStichZone,message, {
@@ -133,7 +133,7 @@ export class GaigelRoom extends Room<GaigelState> {
                 tempclient.send(ClientMessage.YourTurn);                      //der Gewinner ist als nächstes dran
               }
               else{
-                tempclient.send(ClientMessage.loseStich);
+                tempclient.send(ClientMessage.loseStich,{cards: winner.cards});
               }
               zaehler++;
             })

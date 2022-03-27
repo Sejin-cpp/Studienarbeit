@@ -25,6 +25,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private stichZone! : CardZone;
     private stichSet : boolean = false;
     private fiveCardsInHand : boolean = false;
+    private firstTurn : boolean = false;
     private text;
     private button! : Button;
     private eichelMeldenButton! : Button;
@@ -176,8 +177,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //Eigen gezogene Karten können nur auf dem Stich oder auf der eigenen Hand abgelegt werden
         this.input.on('drop', (pointer, gameObject, target) => {
             if(!gameObject.draggable) return;
+            console.log(target);
+            //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
-                if(!this.stichSet && this.fiveCardsInHand){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück
+                if(!this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass"))){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf
                     gameObject.x = target.x;
                     gameObject.y = target.y;
                     gameObject.input.enabled = false;
@@ -198,6 +201,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
                  
             }
+            //----------------------------Ablegen einer Karte auf eigener Hand-----------------------------------------------------//
             else if(target == this.ownZone.dropZone){
                 if(target.data.values.cards >= 5){
                     gameObject.x = gameObject.input.dragStartX;
@@ -208,12 +212,17 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 this.ownZone.updateCardPosition();
                 if(target.data.values.cards == 5){
                     this.fiveCardsInHand = true;
+                    if(this.firstTurn == false){
+                        this.testForMelden();
+                    }
                 }
                 gameObject.y = target.y;
                 gameObject.onHand = true;
                 this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
             }
+            //----------------------------RAUB--------------------------------------------------------------------------------------//
             else if(target == this.trumpfCard){                 //falls ein Spieler eine Karte auf der Trumpfkarte ablegt, wird überprüft, ob ein Raub stattfinden kann
+                console.log("Raub");
                 if(gameObject.color == this.trumpfCard.color && gameObject.value == 0){         //die Farbe muss übereinstimmen und es muss sich um eine sieben handeln
                    //füge die Trumpfkarte zur eigenen Zone hinzu
                     this.ownZone.addCard(this.trumpfCard);
@@ -231,6 +240,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
             }
         });
+
+        
 
 
         //------------Funktionen welche beim eintreffen von Nachrichten vom Server ausgeführt werden-----------------
@@ -256,6 +267,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.startTurn,(message) =>{
+           this.firstTurn = true;
            this.button = new Button({
             scene: this,
             x:this.centerX,
@@ -270,6 +282,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             //if (pointer.leftButtonDown())
             //{
                 console.log("ButtonClicked")
+                this.firstTurn = false;
                 this.room.send(ClientMessage.AufDissle);
         
             //}
@@ -282,7 +295,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
 
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
-        this.room.onMessage(ClientMessage.firstTurn,(message) =>{
+        this.room.onMessage(ClientMessage.secondTurn,(message) =>{
             this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
         })
 
@@ -330,6 +343,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
+            this.firstTurn = false;
             if(this.button){
                 this.button.destroy();
             }
@@ -371,8 +385,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 this.cards.forEach(card => {
                     if(card.id == id){
                         card.depth = 1;
-                        card.x = this.centerX-500
-                        card.y = this.gameHeight-125
+                        card.x = this.centerX-500;
+                        card.y = this.gameHeight-125;
+                        card.setTexture(card.cardback);
                         card.input.enabled = false;
                         console.log(id);
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
@@ -385,7 +400,14 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.room.onMessage(ClientMessage.loseStich,(message) =>{
             this.stichSet = false;
-            console.log("LOSE");
+            message.cards.forEach(id => {
+                this.cards.forEach(card => {
+                    if(card.id == id){
+                        card.setTexture(card.cardback);
+                        card.input.enabled = false;
+                    }
+                })     
+            });
         })
 
         this.room.onMessage(ClientMessage.youAreTheWinner,(message) =>{
@@ -769,7 +791,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             }))
         }
     }
-
+    //diese Methode testet ob der Spieler melden kann
     testForMelden(){
         var info = this.ownZone.testIfMelden()
         var x = 0;
@@ -781,11 +803,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeEichel',
                 depth: 1,
                 texture: 'button',
-                scale: 0.7
+                scale: 0.5
             })
             this.eichelMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
-                //this.room.send(ClientMessage.AufDissle);
+                this.room.send(ClientMessage.melden,{cards: info.eichel});
             });
         }
 
@@ -797,11 +819,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeBlatt',
                 depth: 1,
                 texture: 'button',
-                scale: 0.7
+                scale: 0.5
             })
             this.blattMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
-                //this.room.send(ClientMessage.AufDissle);
+                this.room.send(ClientMessage.melden,{cards: info.blatt});
             });
         }
 
@@ -813,11 +835,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeHerz',
                 depth: 1,
                 texture: 'button',
-                scale: 0.7
+                scale: 0.5
             })
             this.herzMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
-                //this.room.send(ClientMessage.AufDissle);
+                this.room.send(ClientMessage.melden,{cards: info.herz});
             });
         }
 
@@ -829,11 +851,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeSchelle',
                 depth: 1,
                 texture: 'button',
-                scale: 0.7
+                scale: 0.5
             })
             this.schellenMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
-                //this.room.send(ClientMessage.AufDissle);
+                this.room.send(ClientMessage.melden,{cards: info.schellen});
             });
         }
     }

@@ -23,6 +23,7 @@ export default class CardZone {
         this.cards.splice(cardIndex,1)
     }
 
+    //diese Methode überprüft ob sich ein Koenig und ein Ober derselben Farbe sich auf der Hand befinden. Die IDs aller Koenige und Ober sowie gefundene Paare werden zurückgegeben 
     testIfMelden(){
         var eichelArray = [];
         var blattArray = [];
@@ -40,20 +41,20 @@ export default class CardZone {
             if(card.symbol == "koenig"){
                 switch(card.symbol){
                     case "eichel":
-                        eichelArray.push(card);
+                        eichelArray.push(card.id);
                         eichelKing = true;
                         break;
                     case "blatt":
                         blattKing = true;
-                        blattArray.push(card);
+                        blattArray.push(card.id);
                         break;
                     case "herz":
                         herzKing = true;
-                        herzArray.push(card);
+                        herzArray.push(card.id);
                         break;
                     case "schellen":
                         schellenKing = true;
-                        schellenArray.push(card);
+                        schellenArray.push(card.id);
                         break;
                     default:
                 }
@@ -64,25 +65,25 @@ export default class CardZone {
                 switch(card.symbol){
                     case "eichel":
                         if(eichelKing){
-                            eichelArray.push(card);
+                            eichelArray.push(card.id);
                             eichelMatch = true;
                         }
                         break;
                     case "blatt":
                         if(blattKing){
-                            eichelArray.push(card);
+                            eichelArray.push(card.id);
                             blattMatch = true;
                         }
                         break;
                     case "herz":
                         if(herzKing){
-                            eichelArray.push(card);
+                            eichelArray.push(card.id);
                             herzMatch = true;
                         }
                         break;
                     case "schellen":
                         if(schellenKing){
-                            eichelArray.push(card);
+                            eichelArray.push(card.id);
                             schellenMatch = true;
                         }
                         break;
