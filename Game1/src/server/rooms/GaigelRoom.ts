@@ -180,6 +180,14 @@ export class GaigelRoom extends Room<GaigelState> {
       })
     });
 
+    this.onMessage(ClientMessage.melden, (client, message) => {
+      //console.log(message)
+      this.state.melden(client.sessionId,message.cards);
+      this.broadcast(ClientMessage.melden,message, {
+        except: client
+      })
+    });
+
   }
 
   onJoin (client: Client, options: any) {

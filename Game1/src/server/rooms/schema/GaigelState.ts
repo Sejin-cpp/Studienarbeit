@@ -63,6 +63,7 @@ class PlayerState extends Schema
   @type(CardState)
   cardInStich!: CardState
 
+
   constructor(id : string, team: number)
   {
     super()
@@ -116,6 +117,9 @@ export class GaigelState extends Schema
 
   @type('number')
   turnOrder : number = 1
+
+  @type('number')
+  teams : number[] = [0,0];
 
   @type('string')
   trumpfColor! : string
@@ -231,13 +235,32 @@ export class GaigelState extends Schema
       return
     }
   }
-  //diese Methode wird bei einem Raub ausgeführt und fügt die geraubte Karte der hand des Spielers hinzu.
+  //diese Methode wird bei einem Raub ausgeführt und fügt die geraubte Karte der Hand des Spielers hinzu.
   raubTrumpf(playerid :string,newtrumpfcardid : number, oldtrumpfcardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
     var newtrumpfcardIndex = this.cardsInDeck.findIndex((cardstate) => cardstate.id == newtrumpfcardid);
     var oldtrumpfcardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == oldtrumpfcardid);  //suche die Karte aus der Spielerhand heraus
     this.playerstates[playerIndex].removeCardFromHand(oldtrumpfcardIndex);
     this.playerstates[playerIndex].addCardInHand(this.cardsInDeck[newtrumpfcardIndex]);
+  }
+
+  //diese Methode wird bei einem Melden ausgeführt und fügt 20 oder 40m Punkte zum Team hinzu.
+  melden(playerid :string, cardIds : number[]){
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    var teamNr = this.playerstates[playerIndex].team - 1;
+    var value = 0;
+    var cardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardIds[0]);  //suche die erste Karte aus der Spielerhand heraus
+    var card : CardState = this.playerstates[playerIndex].cardsInHand[cardIndex];
+    if(card.color == this.trumpfColor){   //hat das gemeldete Paar die Trumpffarbe, so erhält der Spieler 40 Punkte, ansonsten 20
+      value = 40;
+    }
+    else{
+      value = 20;
+    }
+    if(cardIds.length == 4){    //falls er zweimal das selbe Paar besitzt, bekommt der Spieler doppelte Punkte
+      value *= 2;
+    }
+    this.teams[teamNr] += value;  //füge die Punkte hinzu
   }
 
   //diese Methode speichert den Spieler, welcher auf Dissle geht und vermerkt dass in diesem Spiel ein Spieler auf Dissle geht
@@ -360,6 +383,7 @@ export class GaigelState extends Schema
     this.playerstates.forEach(player => {
       winner.addCardWon(player.cardInStich)
       cardIDs[i] = player.cardInStich.id;
+      this.teams[winner.team-1] += player.cardInStich.value;    //addiere die Punkte zum Team des Spielers
       player.removeCardFromStich();
       i++;
     })
@@ -381,28 +405,23 @@ export class GaigelState extends Schema
   }
 
   testIfEndGame(){
-    var playerHasNoCards = false;
+    var endeGame = false;
     if (this.cardsInDeck.length == 0){
-      this.playerstates.forEach(player => {
-        if (player.cardsInHand.length == 0){
-          playerHasNoCards = true;
-        }
-      })
+      endeGame = true;
     }
-    return playerHasNoCards;
+    this.teams.forEach(teamPoints => {
+      if(teamPoints >= 101){
+        endeGame = true;
+      }
+    })
+    return endeGame;
   }
 
   calculateWinner(){
-    var teams : number[] = [0,0];
-    this.playerstates.forEach(player => {
-      player.cardsWon.forEach(card => {
-        teams[player.team-1] += card.value
-      })
-    })
     var winnerTeam = 0;
     var tempValue = 0;
     var zaehler = 1;
-    teams.forEach(team => {
+    this.teams.forEach(team => {
       if(team > tempValue){
         winnerTeam = zaehler;
         tempValue = team;
@@ -411,5 +430,7 @@ export class GaigelState extends Schema
     })
     return {WinnerTeam: winnerTeam}
   }
+
+  
   
 }
