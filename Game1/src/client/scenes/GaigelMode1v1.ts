@@ -846,6 +846,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
             });
             x += stepX;
         }
+        else if(this.eichelMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Eichelpaar vorliegt
+            this.eichelMeldenButton.text.destroy();
+            this.eichelMeldenButton.destroy();
+        }
 
         if(info.blattMatch){
             this.blattMeldenButton = new Button({
@@ -872,6 +876,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 });
             });
             x += stepX;
+        }
+        else if(this.blattMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Blattpaar vorliegt
+            this.blattMeldenButton.text.destroy();
+            this.blattMeldenButton.destroy();
         }
 
         if(info.herzMatch){
@@ -900,6 +908,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
             });
             x += stepX;
         }
+        else if(this.herzMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Herzpaar vorliegt
+            this.herzMeldenButton.text.destroy();
+            this.herzMeldenButton.destroy();
+        }
 
         if(info.schellenMatch){
             this.schellenMeldenButton = new Button({
@@ -927,6 +939,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
             });
             x += stepX;
         }
+        else if(this.schellenMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Schellenpaar vorliegt
+            this.schellenMeldenButton.text.destroy();
+            this.schellenMeldenButton.destroy();
+        }
+        
     }
 
     update(t: number, dt: number)
