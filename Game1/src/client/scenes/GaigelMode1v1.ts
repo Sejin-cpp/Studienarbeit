@@ -98,9 +98,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
        var id = 1;
        this.cards.forEach(element => {
             element.setScale(0.7);
-            //legt für jede Karte eine Funktion an, welche besagt, dass bei einem Rechtsklick auf die Karte, diese mit der Methode flip() umgedreht wird
+            //legt für jede Karte eine Funktion an, welche besagt, dass bei einem Rechtsklick auf die Karte, diese mit der Methode flip() umgedreht wird. Eine Karte kann nicht umgedreht werden, wenn sie gemeldet wurde
             element.on('pointerdown', (pointer,gameObject) =>{
-                if (pointer.rightButtonDown() && element.onHand)
+                if (pointer.rightButtonDown() && element.onHand && (element.gemeldet == false))
                 {
                     element.input.enabled = false;
                     this.room.send(ClientMessage.CardFlip,{id: element.id, onHand: element.onHand})
@@ -330,7 +330,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //Der Server schickt eine Nachricht, dass die Karte in die eines Mitspielers gelegt wurde. Verdecke diese Karte.
         this.room.onMessage(ClientMessage.CardDropOwnZone,(message) =>{
             this.cards.forEach(element => {
-                if(message.id == element.id){
+                if(message.id == element.id && (element.gemeldet == false)){
                     element.setTexture(element.cardback);
                     element.input.enabled = false;
                 }
@@ -416,6 +416,17 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     if(card.id == id){
                         card.setTexture(card.cardback);
                         card.input.enabled = false;
+                    }
+                })     
+            });
+        })
+        //hat ein anderer Spieler ein oder mehrere Kartenpaare gemeldet, werden diese aufgedeckt
+        this.room.onMessage(ClientMessage.melden,(message) =>{
+            message.cards.forEach(id => {
+                this.cards.forEach(card => {
+                    if(card.id == id){
+                        card.setTexture(card.cardname);
+                        card.gemeldet = true;
                     }
                 })     
             });
@@ -819,9 +830,19 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 texture: 'button',
                 scale: 0.5
             })
+            //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.eichelMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.eichel});
+
+                info.eichel.forEach(id => {
+                    this.cards.forEach(card => {
+                        if(card.id == id){
+                            card.setTexture(card.cardname);
+                            card.gemeldet = true;
+                        }
+                    })     
+                });   
             });
             x += stepX;
         }
@@ -836,9 +857,19 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 texture: 'button',
                 scale: 0.5
             })
+            //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.blattMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.blatt});
+
+                info.blatt.forEach(id => {
+                    this.cards.forEach(card => {
+                        if(card.id == id){
+                            card.setTexture(card.cardname);
+                            card.gemeldet = true;
+                        }
+                    })     
+                });
             });
             x += stepX;
         }
@@ -853,9 +884,19 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 texture: 'button',
                 scale: 0.5
             })
+            //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.herzMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.herz});
+
+                info.herz.forEach(id => {
+                    this.cards.forEach(card => {
+                        if(card.id == id){
+                            card.setTexture(card.cardname);
+                            card.gemeldet = true;
+                        }
+                    })     
+                });
             });
             x += stepX;
         }
@@ -870,9 +911,19 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 texture: 'button',
                 scale: 0.5
             })
+            //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.schellenMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.schellen});
+
+                info.schellen.forEach(id => {
+                    this.cards.forEach(card => {
+                        if(card.id == id){
+                            card.setTexture(card.cardname);
+                            card.gemeldet = true;
+                        }
+                    })     
+                });
             });
             x += stepX;
         }

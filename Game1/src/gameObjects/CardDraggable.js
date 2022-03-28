@@ -8,6 +8,7 @@ export default class CardDraggable extends CardBase{
         this.originalY = this.y;
         this.draggable = true;
         this.dragging = false;
+        this.gemeldet = false;
         this.hidden = true;
         this.ondragend = ondragend;
         this.width = width;
