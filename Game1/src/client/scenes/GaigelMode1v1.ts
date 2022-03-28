@@ -808,10 +808,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
     testForMelden(){
         var info = this.ownZone.testIfMelden()
         var x = 0;
+        var stepX = 100;
         if(info.eichelMatch){
             this.eichelMeldenButton = new Button({
                 scene: this,
-                x:this.centerX,
+                x:this.centerX+x,
                 y:this.gameHeight-380,
                 text: 'MeldeEichel',
                 depth: 1,
@@ -822,12 +823,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.eichel});
             });
+            x += stepX;
         }
 
         if(info.blattMatch){
             this.blattMeldenButton = new Button({
                 scene: this,
-                x:this.centerX,
+                x:this.centerX+x,
                 y:this.gameHeight-380,
                 text: 'MeldeBlatt',
                 depth: 1,
@@ -838,12 +840,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.blatt});
             });
+            x += stepX;
         }
 
         if(info.herzMatch){
             this.herzMeldenButton = new Button({
                 scene: this,
-                x:this.centerX,
+                x:this.centerX+x,
                 y:this.gameHeight-380,
                 text: 'MeldeHerz',
                 depth: 1,
@@ -854,12 +857,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.herz});
             });
+            x += stepX;
         }
 
         if(info.schellenMatch){
             this.schellenMeldenButton = new Button({
                 scene: this,
-                x:this.centerX,
+                x:this.centerX+x,
                 y:this.gameHeight-380,
                 text: 'MeldeSchelle',
                 depth: 1,
@@ -870,6 +874,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.schellen});
             });
+            x += stepX;
         }
     }
 

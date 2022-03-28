@@ -231,6 +231,15 @@ export class GaigelState extends Schema
       return
     }
   }
+  //diese Methode wird bei einem Raub ausgeführt und fügt die geraubte Karte der hand des Spielers hinzu.
+  raubTrumpf(playerid :string,newtrumpfcardid : number, oldtrumpfcardid : number){
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    var newtrumpfcardIndex = this.cardsInDeck.findIndex((cardstate) => cardstate.id == newtrumpfcardid);
+    var oldtrumpfcardIndex = this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == oldtrumpfcardid);  //suche die Karte aus der Spielerhand heraus
+    this.playerstates[playerIndex].removeCardFromHand(oldtrumpfcardIndex);
+    this.playerstates[playerIndex].addCardInHand(this.cardsInDeck[newtrumpfcardIndex]);
+  }
+
   //diese Methode speichert den Spieler, welcher auf Dissle geht und vermerkt dass in diesem Spiel ein Spieler auf Dissle geht
   playerAufDissle(playerid :string){  
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
