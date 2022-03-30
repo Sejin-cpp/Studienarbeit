@@ -13,8 +13,8 @@ export default Arena({
         /**
          * Define your room handlers:
          */
-        gameServer.define('my_room', GaigelRoom);
-
+        gameServer.define('my_room', GaigelRoom, {playerCount: 2});
+        
     },
 
     initializeExpress: (app) => {

@@ -4,6 +4,7 @@ import {ClientMessage} from '../../types/ClientMessage'
 
 export class GaigelRoom extends Room<GaigelState> {
   private clientCount = 0;
+  private maxPlayer : number = 0;
   private setCards = false;
   private turnCounter = 0;
   private aufDisslePlayer! : Client;
@@ -12,6 +13,8 @@ export class GaigelRoom extends Room<GaigelState> {
   private team2 : Client[] = new Array<Client>();
   onCreate (options: any) {
     this.setState(new GaigelState());
+    console.log(options);
+    this.maxPlayer = options.playerCount;
     //wenn der Eröffnungsspieler sich entscheidet auf Dissle zu spielen, wird dieser Spieler gespeichert
     this.onMessage(ClientMessage.AufDissle, (client, message) => {
       console.log("AufDissle");
@@ -22,6 +25,7 @@ export class GaigelRoom extends Room<GaigelState> {
       client.send(ClientMessage.YourTurn);
       this.clients[0].send(ClientMessage.setTrumpfColor);
       this.trumpfColorSet = true;
+      
   });
 
     //synchronisiere die Trumpffarbe mit den restlichen Clients
@@ -205,12 +209,14 @@ export class GaigelRoom extends Room<GaigelState> {
       this.setCards = true;
     }
     client.send(ClientMessage.EndTurn)
-    if(this.clientCount == 2){  //beim 1v1 startet das Spiel nachdem zwei Spieler gejoined sind
-      this.turnCounter = Math.floor(Math.random() * 2);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
+    if(this.clientCount == this.maxPlayer){  //das Spiel startet, sobald die Anzahl der Clients der maximal Spieleranzahl entspricht
+      this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
+      if(this.clientCount == 2){
+        this.clients[1].send(ClientMessage.UpdateDeckPosition);
+      }
       
-      this.clients[1].send(ClientMessage.UpdateDeckPosition);
     }
     console.log(client.sessionId, "joined!")
   }

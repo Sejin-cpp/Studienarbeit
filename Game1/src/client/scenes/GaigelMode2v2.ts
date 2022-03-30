@@ -7,7 +7,7 @@ import CardZone from '../../gameObjects/Cardzone'
 import PlayerZone from '../../gameObjects/Playerzone'
 import Button from '../../gameObjects/Button'
 
-export default class GaigelMode1v1 extends Phaser.Scene
+export default class GaigelMode2v2 extends Phaser.Scene
 {
     private client!: Colyseus.Client
     private cards : CardDraggable[]
@@ -20,8 +20,12 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private gameHeight;
     private centerX;
     private centerY;
+
     private ownZone! : PlayerZone;
+    private teamMateZone! : PlayerZone;
     private enemyZone! : PlayerZone;
+    private enemyZone2! : PlayerZone;
+
     private stichZone! : CardZone;
     private stichSet : boolean = false;
     private fiveCardsInHand : boolean = false;
@@ -118,9 +122,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
             i++;
         })
         //erstelle Kartenablagestellen
-        this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);
-        this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250,0x00ff00);
-        this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250,0xff69b4);
+        
+        this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250);
         
        this.room.onStateChange.once(state => { 
            console.dir(state)
@@ -336,13 +339,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
             });
         })
-        //Der Server schickt eine Nachricht, dass eine Karte von einem Mitspieler aus seiner Hand bewegt wurde. Die Texture dieser Karte muss geupdatet werden(verdeckt oder nicht verdeckt).
         this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
-            this.cards.forEach(element => {
-                if(message.id == element.id){
-                    element.setTexture(message.card.textureKey);
-                }
-            });
+    
         })
         //es ist dein Zug, du kannst Karten bewegen
         this.room.onMessage(ClientMessage.YourTurn,(message) =>{
@@ -944,6 +942,30 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.schellenMeldenButton.destroy();
         }
         
+    }
+
+    configurePos(pos : number){
+        switch(pos){
+            case 1:             //eigene KartenZone ist unten links
+                //Werte noch ändern
+                this.enemyZone = new PlayerZone(this,this.centerX,125,750,250);
+                this.enemyZone2 = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
+                this.teamMateZone = new PlayerZone(this,this.centerX,125,750,250);
+                this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
+                break;
+            case 2:             //eigene KartenZone ist unten rechts
+                break;      
+            case 3:             //eigene KartenZone ist unten links    
+                this.cards.forEach(element => {
+                    element.x = this.centerX-200;
+                });
+                break;  
+            case 4:             //eigene KartenZone ist unten rechts
+                this.cards.forEach(element => {
+                    element.x = this.centerX-200;
+                });
+                break;
+        }
     }
 
     update(t: number, dt: number)

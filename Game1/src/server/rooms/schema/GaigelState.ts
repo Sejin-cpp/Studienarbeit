@@ -118,7 +118,7 @@ export class GaigelState extends Schema
   @type('number')
   turnOrder : number = 1
 
-  @type('number')
+  @type(['number'])
   teams : number[] = [0,0];
 
   @type('string')
