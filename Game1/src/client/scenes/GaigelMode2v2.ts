@@ -1,3 +1,4 @@
+
 import Phaser from 'phaser'
 import * as Colyseus from 'colyseus.js'
 import { GaigelState } from '../../server/rooms/schema/GaigelState'
@@ -22,9 +23,9 @@ export default class GaigelMode2v2 extends Phaser.Scene
     private centerY;
     private ownZone! : PlayerZone;
     private enemyZone! : PlayerZone;
-    private enemyZone2! : PlayerZone;
-
     private stichZone! : CardZone;
+    private enemyZone2! : PlayerZone; 
+    private teamMateZone! : PlayerZone;
     private stichSet : boolean = false;
     private fiveCardsInHand : boolean = false;
     private firstTurn : boolean = false;
@@ -34,6 +35,14 @@ export default class GaigelMode2v2 extends Phaser.Scene
     private blattMeldenButton! : Button;
     private herzMeldenButton! : Button;
     private schellenMeldenButton! : Button;
+    //Parameter für Melden
+    private eichelGemeldet : boolean = false;
+    private blattGemeldet : boolean = false;
+    private herzGemeldet : boolean = false;
+    private schellenGemeldet : boolean = false;
+    private pairGemeldet : boolean = false;
+
+    
 	constructor()
 	{
 		super('hello-world')
@@ -88,7 +97,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
     async create()
     {
        
-       this.input.mouse.disableContextMenu();
+       //this.input.mouse.disableContextMenu();
        this.room = await this.client.joinOrCreate<GaigelState>('my_room')
 
        console.log(this.room.sessionId)
@@ -115,13 +124,14 @@ export default class GaigelMode2v2 extends Phaser.Scene
         });
         Phaser.Actions.Shuffle(this.cards); //Das Array, welches alle Karten enthält, wird gemischt
         var i = 1;
-        this.cards.forEach(element =>{      //Reihenfolge wird festgelegt
+       /* this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
             element.setDepth(i);
             i++;
-        })
+        })*/
         //erstelle Kartenablagestellen
-        
-        this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250);
+        this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);
+        this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250,0x00ff00);
+        this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250,0xff69b4);
         
        this.room.onStateChange.once(state => { 
            console.dir(state)
@@ -179,7 +189,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
             if(!gameObject.draggable) return;
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
-                if(!this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass"))){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf
+                if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass")) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                    this.pairGemeldet = false;
                     gameObject.x = target.x;
                     gameObject.y = target.y;
                     gameObject.input.enabled = false;
@@ -336,8 +347,13 @@ export default class GaigelMode2v2 extends Phaser.Scene
                 }
             });
         })
+        //Der Server schickt eine Nachricht, dass eine Karte von einem Mitspieler aus seiner Hand bewegt wurde. Die Texture dieser Karte muss geupdatet werden(verdeckt oder nicht verdeckt).
         this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
-    
+            this.cards.forEach(element => {
+                if(message.id == element.id){
+                    element.setTexture(message.card.textureKey);
+                }
+            });
         })
         //es ist dein Zug, du kannst Karten bewegen
         this.room.onMessage(ClientMessage.YourTurn,(message) =>{
@@ -351,6 +367,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
             if(this.button){
                 this.button.destroy();
             }
+            this.destroyAllMeldeButtons();
             this.cards.forEach(element => {
                 element.setDraggAble(false);
             })
@@ -812,10 +829,12 @@ export default class GaigelMode2v2 extends Phaser.Scene
     }
     //diese Methode testet ob der Spieler melden kann
     testForMelden(){
-        var info = this.ownZone.testIfMelden()
+        console.log(this.ownZone.cards)
+        var info = this.ownZone.testIfMelden();
         var x = 0;
+        console.log(info);
         var stepX = 100;
-        if(info.eichelMatch){
+        if(info.eichelMatch && (this.eichelGemeldet == false)){
             this.eichelMeldenButton = new Button({
                 scene: this,
                 x:this.centerX+x,
@@ -829,7 +848,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
             this.eichelMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.eichel});
-
+                this.eichelGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.eichel.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -838,15 +858,12 @@ export default class GaigelMode2v2 extends Phaser.Scene
                         }
                     })     
                 });   
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
         }
-        else if(this.eichelMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Eichelpaar vorliegt
-            this.eichelMeldenButton.text.destroy();
-            this.eichelMeldenButton.destroy();
-        }
 
-        if(info.blattMatch){
+        if(info.blattMatch && (this.blattGemeldet == false)){
             this.blattMeldenButton = new Button({
                 scene: this,
                 x:this.centerX+x,
@@ -860,7 +877,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
             this.blattMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.blatt});
-
+                this.blattGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.blatt.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -869,15 +887,13 @@ export default class GaigelMode2v2 extends Phaser.Scene
                         }
                     })     
                 });
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
-        }
-        else if(this.blattMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Blattpaar vorliegt
-            this.blattMeldenButton.text.destroy();
-            this.blattMeldenButton.destroy();
+            
         }
 
-        if(info.herzMatch){
+        if(info.herzMatch && (this.herzGemeldet == false)){
             this.herzMeldenButton = new Button({
                 scene: this,
                 x:this.centerX+x,
@@ -891,7 +907,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
             this.herzMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.herz});
-
+                this.herzGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.herz.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -900,11 +917,12 @@ export default class GaigelMode2v2 extends Phaser.Scene
                         }
                     })     
                 });
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
         }
 
-        if(info.schellenMatch){
+        if(info.schellenMatch && (this.schellenGemeldet == false)){
             this.schellenMeldenButton = new Button({
                 scene: this,
                 x:this.centerX+x,
@@ -918,7 +936,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
             this.schellenMeldenButton.on('pointerdown', (pointer,gameObject) =>{
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.schellen});
-
+                this.schellenGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.schellen.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -927,10 +946,26 @@ export default class GaigelMode2v2 extends Phaser.Scene
                         }
                     })     
                 });
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
         }
-        else if(this.schellenMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Schellenpaar vorliegt
+        
+    }
+    destroyAllMeldeButtons(){
+        if(this.eichelMeldenButton){
+            this.eichelMeldenButton.text.destroy();
+            this.eichelMeldenButton.destroy();
+        }
+        if(this.blattMeldenButton){
+            this.blattMeldenButton.text.destroy();
+            this.blattMeldenButton.destroy();
+        }
+        if(this.herzMeldenButton){
+            this.herzMeldenButton.text.destroy();
+            this.herzMeldenButton.destroy();
+        }
+        if(this.schellenMeldenButton){
             this.schellenMeldenButton.text.destroy();
             this.schellenMeldenButton.destroy();
         }
