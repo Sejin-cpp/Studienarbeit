@@ -386,6 +386,7 @@ export class GaigelState extends Schema
       this.teams[winner.team-1] += player.cardInStich.value;    //addiere die Punkte zum Team des Spielers
       player.removeCardFromStich();
       i++;
+      console.log(this.teams);
     })
     this.countCardInStich = 0;
     return {Id: winner.id, cards: cardIDs, status: "OK"};

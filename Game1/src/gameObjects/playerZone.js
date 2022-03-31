@@ -34,7 +34,7 @@ export default class PlayerZone extends CardZone {
         var schellenMatch = false;
         this.cards.forEach(card => { 
             if(card.symbol == "koenig"){
-                switch(card.symbol){
+                switch(card.color){
                     case "eichel":
                         eichelArray.push(card.id);
                         eichelKing = true;
@@ -57,7 +57,7 @@ export default class PlayerZone extends CardZone {
         })
         this.cards.forEach(card => { 
             if(card.symbol == "ober"){
-                switch(card.symbol){
+                switch(card.color){
                     case "eichel":
                         if(eichelKing){
                             eichelArray.push(card.id);
@@ -66,19 +66,19 @@ export default class PlayerZone extends CardZone {
                         break;
                     case "blatt":
                         if(blattKing){
-                            eichelArray.push(card.id);
+                            blattArray.push(card.id);
                             blattMatch = true;
                         }
                         break;
                     case "herz":
                         if(herzKing){
-                            eichelArray.push(card.id);
+                            herzArray.push(card.id);
                             herzMatch = true;
                         }
                         break;
                     case "schellen":
                         if(schellenKing){
-                            eichelArray.push(card.id);
+                            schellenArray.push(card.id);
                             schellenMatch = true;
                         }
                         break;
