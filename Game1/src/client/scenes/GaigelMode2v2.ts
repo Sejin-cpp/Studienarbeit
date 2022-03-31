@@ -20,9 +20,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
     private gameHeight;
     private centerX;
     private centerY;
-
     private ownZone! : PlayerZone;
-    private teamMateZone! : PlayerZone;
     private enemyZone! : PlayerZone;
     private enemyZone2! : PlayerZone;
 
@@ -127,7 +125,6 @@ export default class GaigelMode2v2 extends Phaser.Scene
         
        this.room.onStateChange.once(state => { 
            console.dir(state)
-           //this.room.state.setCardsInDeck(this.cards)
        }) 
 
 
@@ -905,10 +902,6 @@ export default class GaigelMode2v2 extends Phaser.Scene
                 });
             });
             x += stepX;
-        }
-        else if(this.herzMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Herzpaar vorliegt
-            this.herzMeldenButton.text.destroy();
-            this.herzMeldenButton.destroy();
         }
 
         if(info.schellenMatch){
