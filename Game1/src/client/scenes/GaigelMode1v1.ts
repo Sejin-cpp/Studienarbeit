@@ -37,6 +37,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private blattGemeldet : boolean = false;
     private herzGemeldet : boolean = false;
     private schellenGemeldet : boolean = false;
+    private pairGemeldet : boolean = false;
 
     
 	constructor()
@@ -185,7 +186,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
             if(!gameObject.draggable) return;
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
-                if(!this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass") || gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf und falls es sich um eine gemeldete Kart handelt
+                if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass")) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                    this.pairGemeldet = false;
                     gameObject.x = target.x;
                     gameObject.y = target.y;
                     gameObject.input.enabled = false;
@@ -362,6 +364,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             if(this.button){
                 this.button.destroy();
             }
+            this.destroyAllMeldeButtons();
             this.cards.forEach(element => {
                 element.setDraggAble(false);
             })
@@ -843,6 +846,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.eichel});
                 this.eichelGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.eichel.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -851,14 +855,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         }
                     })     
                 });   
-                this.eichelMeldenButton.text.destroy();
-                this.eichelMeldenButton.destroy();
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
-        }
-        else if(this.eichelMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Eichelpaar vorliegt
-            this.eichelMeldenButton.text.destroy();
-            this.eichelMeldenButton.destroy();
         }
 
         if(info.blattMatch && (this.blattGemeldet == false)){
@@ -876,6 +875,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.blatt});
                 this.blattGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.blatt.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -884,15 +884,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         }
                     })     
                 });
-                this.blattMeldenButton.text.destroy();
-                this.blattMeldenButton.destroy();
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
             
-        }
-        else if(this.blattMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Blattpaar vorliegt
-            this.blattMeldenButton.text.destroy();
-            this.blattMeldenButton.destroy();
         }
 
         if(info.herzMatch && (this.herzGemeldet == false)){
@@ -910,6 +905,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.herz});
                 this.herzGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.herz.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -918,14 +914,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         }
                     })     
                 });
-                this.herzMeldenButton.text.destroy();
-                this.herzMeldenButton.destroy();
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
-        }
-        else if(this.herzMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Herzpaar vorliegt
-            this.herzMeldenButton.text.destroy();
-            this.herzMeldenButton.destroy();
         }
 
         if(info.schellenMatch && (this.schellenGemeldet == false)){
@@ -943,6 +934,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.room.send(ClientMessage.melden,{cards: info.schellen});
                 this.schellenGemeldet = true;
+                this.pairGemeldet = true;               //ein Paar wurde gemeldet
                 info.schellen.forEach(id => {
                     this.cards.forEach(card => {
                         if(card.id == id){
@@ -951,18 +943,31 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         }
                     })     
                 });
-                this.schellenMeldenButton.text.destroy();
-                this.schellenMeldenButton.destroy();
+                this.destroyAllMeldeButtons();
             });
             x += stepX;
         }
-        else if(this.schellenMeldenButton){       //entferne den Button, falls dieser Button existiert und kein Schellenpaar vorliegt
+        
+    }
+    destroyAllMeldeButtons(){
+        if(this.eichelMeldenButton){
+            this.eichelMeldenButton.text.destroy();
+            this.eichelMeldenButton.destroy();
+        }
+        if(this.blattMeldenButton){
+            this.blattMeldenButton.text.destroy();
+            this.blattMeldenButton.destroy();
+        }
+        if(this.herzMeldenButton){
+            this.herzMeldenButton.text.destroy();
+            this.herzMeldenButton.destroy();
+        }
+        if(this.schellenMeldenButton){
             this.schellenMeldenButton.text.destroy();
             this.schellenMeldenButton.destroy();
         }
         
     }
-
     update(t: number, dt: number)
     {
         
