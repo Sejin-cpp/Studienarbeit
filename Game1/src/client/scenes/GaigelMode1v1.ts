@@ -138,6 +138,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
        //----------Funktionen beim Ausführen einer Mausfunktion-----------------
        //beim Start eines drags einer Karte mit dem Mauszeiger, wird diese Funktion ausgeführt
        this.input.on('dragstart',(pointer,gameObject) =>{
+           console.log(gameObject.draggable);
             if(!gameObject.draggable) return;
             //this.stateMachine.setState('cardMove');
             this.tempCard = gameObject;
@@ -176,8 +177,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     gameObject.y = this.ownZone.dropZone.y;
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }
+                this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
             }
-            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
+            
 
             
         })
@@ -194,11 +196,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.pairGemeldet = false;
                     gameObject.x = target.x;
                     gameObject.y = target.y;
-                    gameObject.input.enabled = false;
+                    gameObject.setDraggAble(false);
                     gameObject.onHand = false;
                     this.stichSet = true;
                     this.fiveCardsInHand = false;
-                    this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});    
+                    this.room.send(ClientMessage.CardDropStichZone, {card:this.tempCard, id:this.tempCard.id});    
                     this.destroyAllMeldeButtons();
                     console.log("Karte ",gameObject.id ," auf Stich gelegt");
                 }
@@ -346,6 +348,16 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 }
             });
         })
+
+        this.room.onMessage(ClientMessage.CardDropStichZone,(message) =>{
+            this.cards.forEach(element => {
+                if(message.id == element.id){
+                    element.input.enabled = false;
+                    element.x = message.card.x;
+                    element.y = message.card.y;
+                }
+            });
+        })
         //Der Server schickt eine Nachricht, dass eine Karte von einem Mitspieler aus seiner Hand bewegt wurde. Die Texture dieser Karte muss geupdatet werden(verdeckt oder nicht verdeckt).
         this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
             this.cards.forEach(element => {
@@ -363,9 +375,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
             this.firstTurn = false;
-            if(this.button){
-                this.button.destroy();
-            }
             this.destroyAllMeldeButtons();
             this.cards.forEach(element => {
                 element.setDraggAble(false);
@@ -403,30 +412,15 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //falls der Server den Spieler benachrichtigt, dass er den Stich gewonnen hat, wird der aktuelle Stich auf seinen Stapel an gewonnen Karten gelegt
         this.room.onMessage(ClientMessage.winStich,(message) =>{
             this.stichSet = false;
-            var test = true;
             message.cards.forEach(id => {
                 this.cards.forEach(card => {
                     if(card.id == id){
                         card.depth = 1;
                         card.x = this.centerX-500;
                         card.y = this.gameHeight-125;
-                        if(test){
-                            test = false;
-                            console.log(id);
-                            console.log("Offen");
-                            card.setTexture(card.cardname);
-                        }
-                        else{
-                            console.log(id);
-                            console.log("Verdeckt");
-                            card.setTexture(card.cardback);
-                            card.x = this.centerX-600;
-                            card.y = this.gameHeight-125;
-                        }
+                        card.setTexture(card.cardback);
                         card.input.enabled = false;
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
-                        console.log(card.x);
-                        console.log(card.y);
                     }
                 })     
             });
