@@ -409,7 +409,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         card.y = this.gameHeight-125;
                         card.setTexture(card.cardback);
                         card.input.enabled = false;
-                        console.log(id);
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
                         console.log(card.x);
                         console.log(card.y);
