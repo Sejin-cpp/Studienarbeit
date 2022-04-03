@@ -21,7 +21,6 @@ export class GaigelRoom extends Room<GaigelState> {
       this.state.firstTurn = false;
       this.aufDisslePlayer = client;
       this.state.playerAufDissle(client.sessionId);
-      client.send(ClientMessage.deleteButton);
       client.send(ClientMessage.YourTurn);
       this.clients[0].send(ClientMessage.setTrumpfColor);
       this.trumpfColorSet = true;
@@ -83,10 +82,11 @@ export class GaigelRoom extends Room<GaigelState> {
     this.onMessage(ClientMessage.CardDropStichZone, (client, message) => {
       //console.log(message)
       var info = this.state.addCardToStich(client.sessionId,message.id);
+      console.log(info);
       if(info != "NO"){
         if(info != "OK"){ //Falls es sich bei diesem Zug um eine Spieleröffnung handelt, wird die Art der Spieleröffnung an alle Spieler gesendet
+          console.log(info);
           this.broadcast(ClientMessage.secondTurn,info);
-          client.send(ClientMessage.deleteButton);
         }
         this.broadcast(ClientMessage.CardDropStichZone,message, {
           except: client
@@ -133,8 +133,8 @@ export class GaigelRoom extends Room<GaigelState> {
               if(tempclient.sessionId == winner.Id){
                 this.turnCounter = zaehler;
                 console.log(winner.cards)
-                tempclient.send(ClientMessage.winStich,{cards: winner.cards}) //der Gewinner wird informiert und erhält als Info die Karten welche er gewonnen hat
                 tempclient.send(ClientMessage.YourTurn);                      //der Gewinner ist als nächstes dran
+                tempclient.send(ClientMessage.winStich,{cards: winner.cards}) //der Gewinner wird informiert und erhält als Info die Karten welche er gewonnen hat                   
               }
               else{
                 tempclient.send(ClientMessage.loseStich,{cards: winner.cards});

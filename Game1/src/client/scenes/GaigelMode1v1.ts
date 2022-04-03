@@ -187,6 +187,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
                 if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass")) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                    if(this.button){
+                        this.button.text.destroy();
+                        this.button.destroy();
+                    }
                     this.pairGemeldet = false;
                     gameObject.x = target.x;
                     gameObject.y = target.y;
@@ -195,6 +199,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.stichSet = true;
                     this.fiveCardsInHand = false;
                     this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});    
+                    this.destroyAllMeldeButtons();
+                    console.log("Karte ",gameObject.id ," auf Stich gelegt");
                 }
                 else if(gameObject.onHand == false){
                     gameObject.x = gameObject.input.dragStartX;
@@ -277,9 +283,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         element.y = this.centerY - (message.card.y - this.centerY);
                     }
                     else{
-                        element.y = this.centerY + (this.centerY - message.card.y)
+                        element.y = this.centerY + (this.centerY - message.card.y);
                     }
-                    
                 }
            });
         })
@@ -302,18 +307,15 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.firstTurn = false;
                 this.room.send(ClientMessage.AufDissle);
+                this.button.text.destroy();
+                this.button.destroy();
         
             //}
-        });
+            });
         })
-
-        this.room.onMessage(ClientMessage.deleteButton,(message) =>{
-            this.button.text.destroy();
-            this.button.destroy();
-        })
-
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
         this.room.onMessage(ClientMessage.secondTurn,(message) =>{
+            console.log("info");
             this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
         })
 
@@ -401,13 +403,26 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //falls der Server den Spieler benachrichtigt, dass er den Stich gewonnen hat, wird der aktuelle Stich auf seinen Stapel an gewonnen Karten gelegt
         this.room.onMessage(ClientMessage.winStich,(message) =>{
             this.stichSet = false;
+            var test = true;
             message.cards.forEach(id => {
                 this.cards.forEach(card => {
                     if(card.id == id){
                         card.depth = 1;
                         card.x = this.centerX-500;
                         card.y = this.gameHeight-125;
-                        card.setTexture(card.cardback);
+                        if(test){
+                            test = false;
+                            console.log(id);
+                            console.log("Offen");
+                            card.setTexture(card.cardname);
+                        }
+                        else{
+                            console.log(id);
+                            console.log("Verdeckt");
+                            card.setTexture(card.cardback);
+                            card.x = this.centerX-600;
+                            card.y = this.gameHeight-125;
+                        }
                         card.input.enabled = false;
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
                         console.log(card.x);
@@ -461,12 +476,18 @@ export default class GaigelMode1v1 extends Phaser.Scene
             //vertausche die Position der beiden Karten
             this.trumpfCard.x = oldTrumpf.x;
             this.trumpfCard.y = oldTrumpf.y;
-            this.trumpfCard.draggable = false;
+            this.trumpfCard.setDraggAble(false);
             this.trumpfCard.setInteractive(undefined,undefined,true);
-            oldTrumpf.draggable = false;
+            oldTrumpf.setDraggAble(false);
             oldTrumpf.setInteractive(undefined,undefined,false);
             oldTrumpf.setTexture(oldTrumpf.cardback);
             
+        })
+
+        this.room.onMessage(ClientMessage.updateAllCards,(message) =>{
+            this.cards.forEach(element => {
+                this.room.send(ClientMessage.CardMove,{card:element, id:element.id});
+           });
         })
     }
 

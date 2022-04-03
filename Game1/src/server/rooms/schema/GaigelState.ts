@@ -138,7 +138,7 @@ export class GaigelState extends Schema
     this.possibleWinners = new ArraySchema<PlayerState>();
     this.cardsInDeck = new  ArraySchema <CardState>();
     this.countCardInStich = 0;
-    this.firstTurn = false;
+    this.firstTurn = true;
     this.firstStich = "";
     this.aufDissle = false;
   }
@@ -329,6 +329,9 @@ export class GaigelState extends Schema
         case "AndereAlte":
           this.playerstates.forEach(player => {
             if(player != this.firstPlayerinFirstTurn){
+              console.log("test");
+              console.log({FirstPlayer: this.firstPlayerinFirstTurn.cardInStich.color, Player: player.cardInStich.color});
+              console.log({FirstPlayer: this.firstPlayerinFirstTurn.cardInStich.symbol, Player: player.cardInStich.symbol});
               //falls ein Spieler dasselbe Ass gelegt hat wie der Eröffnungsspieler, gweinnt er den Stich
               if(player.cardInStich.color == this.firstPlayerinFirstTurn.cardInStich.color && player.cardInStich.symbol == this.firstPlayerinFirstTurn.cardInStich.symbol){
                 winner = player;
@@ -386,7 +389,6 @@ export class GaigelState extends Schema
       this.teams[winner.team-1] += player.cardInStich.value;    //addiere die Punkte zum Team des Spielers
       player.removeCardFromStich();
       i++;
-      console.log(this.teams);
     })
     this.countCardInStich = 0;
     return {Id: winner.id, cards: cardIDs, status: "OK"};

@@ -15,11 +15,11 @@ export enum ClientMessage
     loseStich,
     secondTurn,
     startTurn,
-    deleteButton,
     endGame,
     AufDissle,
     youAreTheWinner,
     youAreTheLoser,
     stealTrumpf,
     melden,
+    updateAllCards,
 }
