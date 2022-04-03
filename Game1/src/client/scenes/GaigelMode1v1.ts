@@ -138,7 +138,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
        //----------Funktionen beim Ausführen einer Mausfunktion-----------------
        //beim Start eines drags einer Karte mit dem Mauszeiger, wird diese Funktion ausgeführt
        this.input.on('dragstart',(pointer,gameObject) =>{
-           console.log(gameObject.draggable);
             if(!gameObject.draggable) return;
             //this.stateMachine.setState('cardMove');
             this.tempCard = gameObject;
@@ -371,6 +370,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.cards.forEach(element => {
                 element.setDraggAble(true);
             })
+            if(this.trumpfCard){
+                this.trumpfCard.setDraggAble(false);
+            }
+            
         })
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
@@ -405,6 +408,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     element.setTexture(element.cardname)
                     element.setInteractive(undefined,undefined,true);
                     element.draggable = false;
+                    console.log(element.draggable);
                     this.trumpfCard = element;          //speichere die Trumpfkarte
                 }
             })
