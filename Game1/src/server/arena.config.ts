@@ -1,10 +1,16 @@
 import Arena from "@colyseus/arena";
 import { monitor } from "@colyseus/monitor";
+import path from 'path';
+import serveIndex from 'serve-index';
+import express from 'express';
+
 
 /**
  * Import your Room files
  */
+import { LobbyRoom } from 'colyseus';
 import { GaigelRoom } from "./rooms/GaigelRoom";
+
 
 export default Arena({
     getId: () => "Your Colyseus App",
@@ -13,11 +19,21 @@ export default Arena({
         /**
          * Define your room handlers:
          */
-        gameServer.define('my_room', GaigelRoom);
+        gameServer
+            .define("lobby", LobbyRoom);
+        gameServer
+            .define("my_room", GaigelRoom)
+            .enableRealtimeListing();
+        gameServer
+            .onShutdown(function(){
+                console.log(`game server is going down.`);
+            });
 
     },
 
     initializeExpress: (app) => {
+        app.use('/', serveIndex(path.join(__dirname, "static"), {'icons': true}))
+        app.use('/', express.static(path.join(__dirname, "static")));
         /**
          * Bind your custom express routes here:
          */

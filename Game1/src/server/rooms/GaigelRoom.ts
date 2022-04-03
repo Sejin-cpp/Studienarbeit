@@ -1,4 +1,4 @@
-import { Room, Client } from "colyseus"
+import { Room, Client, updateLobby } from "colyseus"
 import { GaigelState } from "./schema/GaigelState"
 
 export class GaigelRoom extends Room<GaigelState> {
@@ -12,6 +12,9 @@ export class GaigelRoom extends Room<GaigelState> {
       })
     });
 
+
+
+    updateLobby(this);
   }
 
   onJoin (client: Client, options: any) {

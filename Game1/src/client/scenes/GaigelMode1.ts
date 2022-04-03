@@ -32,4 +32,5 @@ export default class GaigelMode1 extends Phaser.Scene
            room.send('keydown',evt.key)
        })
     }
+    
 }
