@@ -138,7 +138,7 @@ export class GaigelState extends Schema
     this.possibleWinners = new ArraySchema<PlayerState>();
     this.cardsInDeck = new  ArraySchema <CardState>();
     this.countCardInStich = 0;
-    this.firstTurn = true;
+    this.firstTurn = false;
     this.firstStich = "";
     this.aufDissle = false;
   }
