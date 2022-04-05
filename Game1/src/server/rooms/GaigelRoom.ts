@@ -11,6 +11,7 @@ export class GaigelRoom extends Room<GaigelState> {
   private trumpfColorSet : boolean = false;
   private team1 : Client[] = new Array<Client>();
   private team2 : Client[] = new Array<Client>();
+  private gameIsRunning : boolean = false;
   onCreate (options: any) {
     this.setState(new GaigelState());
     console.log(options);
@@ -148,6 +149,7 @@ export class GaigelRoom extends Room<GaigelState> {
         }
       }
       if(this.state.testIfEndGame()){       //teste ob das Spiel vorbei ist
+        this.gameIsRunning = false;
         var teamNr = this.state.calculateWinner();    //ermittele das Team welches gewonnen hat und sende allen Spieler die Info, ob sie gewonnen oder verloren haben
         if(teamNr.WinnerTeam == 1){
           this.team1.forEach(client => {
@@ -210,6 +212,7 @@ export class GaigelRoom extends Room<GaigelState> {
     }
     client.send(ClientMessage.EndTurn)
     if(this.clientCount == this.maxPlayer){  //das Spiel startet, sobald die Anzahl der Clients der maximal Spieleranzahl entspricht
+      this.gameIsRunning = true;
       this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
@@ -225,6 +228,29 @@ export class GaigelRoom extends Room<GaigelState> {
     console.log(client.sessionId, "left!");
     this.state.removePlayer(client.sessionId);
     this.clientCount--;
+    if(this.gameIsRunning){                         //falls ein Spieler das laufende Spiel verlässt, verliert sein Team
+      var playerIndex = this.team1.findIndex((clientT) => clientT == client);   //überprüfe in welchem Team sich der Spieler befand, sein Team verliert dann
+      if(playerIndex == -1){ 
+        this.team1.forEach(clientT => {
+          client.send(ClientMessage.youAreTheWinner);
+        })
+        this.team2.forEach(clientT => {
+          client.send(ClientMessage.youAreTheLoser);
+        })
+        console.log("Team1 wins");
+      }
+      else{
+        this.team2.forEach(clientT => {
+          client.send(ClientMessage.youAreTheWinner);
+        })
+        this.team1.forEach(clientT => {
+          client.send(ClientMessage.youAreTheLoser);
+        })
+        console.log("Team2 wins");
+      }
+      this.disconnect();
+    }
+    
   }
 
   onDispose() {
