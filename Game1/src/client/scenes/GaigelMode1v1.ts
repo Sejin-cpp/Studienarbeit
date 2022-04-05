@@ -247,12 +247,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.trumpfCard.onHand = true;
                     this.trumpfCard.draggable = true;
                     this.trumpfCard.setInteractive(undefined,undefined,false);
-                    //lege die abgelegte Karte als neue Trumpfkarte fest
+                    //lege die abgelegte Karte als neue Trumpfkarte fest, diese kann nicht geraubt werden
                     gameObject.x = tempx;
                     gameObject.y = tempy;
                     gameObject.onHand = false;
                     gameObject.draggable = false;
-                    gameObject.setInteractive(undefined,undefined,true);
                     this.room.send(ClientMessage.stealTrumpf, {newTrumpf: gameObject.id, oldTrumpf: this.trumpfCard.id, oldTrumpfX: this.trumpfCard.x, oldTrumpfY: this.trumpfCard.y});
                     this.room.send(ClientMessage.CardMove, {card:this.trumpfCard, id:this.trumpfCard.id});
                     this.trumpfCard = gameObject;
@@ -475,7 +474,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.trumpfCard.x = oldTrumpf.x;
             this.trumpfCard.y = oldTrumpf.y;
             this.trumpfCard.setDraggAble(false);
-            this.trumpfCard.setInteractive(undefined,undefined,true);
             oldTrumpf.setDraggAble(false);
             oldTrumpf.setInteractive(undefined,undefined,false);
             oldTrumpf.setTexture(oldTrumpf.cardback);
