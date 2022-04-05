@@ -22,4 +22,5 @@ export enum ClientMessage
     stealTrumpf,
     melden,
     updateAllCards,
+    setPos,
 }

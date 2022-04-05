@@ -8,7 +8,7 @@ import CardZone from '../../gameObjects/Cardzone'
 import PlayerZone from '../../gameObjects/Playerzone'
 import Button from '../../gameObjects/Button'
 
-export default class GaigelMode2v2 extends Phaser.Scene
+export default class GaigelMode1v1 extends Phaser.Scene
 {
     private client!: Colyseus.Client
     private cards : CardDraggable[]
@@ -22,10 +22,10 @@ export default class GaigelMode2v2 extends Phaser.Scene
     private centerX;
     private centerY;
     private ownZone! : PlayerZone;
-    private enemyZone! : PlayerZone;
-    private stichZone! : CardZone;
-    private enemyZone2! : PlayerZone; 
     private teamMateZone! : PlayerZone;
+    private enemyZone! : PlayerZone;
+    private enemyZone2! : PlayerZone;
+    private stichZone! : CardZone;
     private stichSet : boolean = false;
     private fiveCardsInHand : boolean = false;
     private firstTurn : boolean = false;
@@ -179,8 +179,9 @@ export default class GaigelMode2v2 extends Phaser.Scene
                     gameObject.y = this.ownZone.dropZone.y;
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }
+                this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
             }
-            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
+            
 
             
         })
@@ -190,14 +191,20 @@ export default class GaigelMode2v2 extends Phaser.Scene
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
                 if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass")) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                    if(this.button){
+                        this.button.text.destroy();
+                        this.button.destroy();
+                    }
                     this.pairGemeldet = false;
                     gameObject.x = target.x;
                     gameObject.y = target.y;
-                    gameObject.input.enabled = false;
+                    gameObject.setDraggAble(false);
                     gameObject.onHand = false;
                     this.stichSet = true;
                     this.fiveCardsInHand = false;
-                    this.room.send(ClientMessage.CardDropStichZone, {id:this.tempCard.id});    
+                    this.room.send(ClientMessage.CardDropStichZone, {card:this.tempCard, id:this.tempCard.id});    
+                    this.destroyAllMeldeButtons();
+                    console.log("Karte ",gameObject.id ," auf Stich gelegt");
                 }
                 else if(gameObject.onHand == false){
                     gameObject.x = gameObject.input.dragStartX;
@@ -243,12 +250,11 @@ export default class GaigelMode2v2 extends Phaser.Scene
                     this.trumpfCard.onHand = true;
                     this.trumpfCard.draggable = true;
                     this.trumpfCard.setInteractive(undefined,undefined,false);
-                    //lege die abgelegte Karte als neue Trumpfkarte fest
+                    //lege die abgelegte Karte als neue Trumpfkarte fest, diese kann nicht geraubt werden
                     gameObject.x = tempx;
                     gameObject.y = tempy;
                     gameObject.onHand = false;
                     gameObject.draggable = false;
-                    gameObject.setInteractive(undefined,undefined,true);
                     this.room.send(ClientMessage.stealTrumpf, {newTrumpf: gameObject.id, oldTrumpf: this.trumpfCard.id, oldTrumpfX: this.trumpfCard.x, oldTrumpfY: this.trumpfCard.y});
                     this.room.send(ClientMessage.CardMove, {card:this.trumpfCard, id:this.trumpfCard.id});
                     this.trumpfCard = gameObject;
@@ -280,9 +286,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
                         element.y = this.centerY - (message.card.y - this.centerY);
                     }
                     else{
-                        element.y = this.centerY + (this.centerY - message.card.y)
+                        element.y = this.centerY + (this.centerY - message.card.y);
                     }
-                    
                 }
            });
         })
@@ -305,18 +310,15 @@ export default class GaigelMode2v2 extends Phaser.Scene
                 console.log("ButtonClicked")
                 this.firstTurn = false;
                 this.room.send(ClientMessage.AufDissle);
+                this.button.text.destroy();
+                this.button.destroy();
         
             //}
-        });
+            });
         })
-
-        this.room.onMessage(ClientMessage.deleteButton,(message) =>{
-            this.button.text.destroy();
-            this.button.destroy();
-        })
-
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
         this.room.onMessage(ClientMessage.secondTurn,(message) =>{
+            console.log("info");
             this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
         })
 
@@ -347,6 +349,16 @@ export default class GaigelMode2v2 extends Phaser.Scene
                 }
             });
         })
+
+        this.room.onMessage(ClientMessage.CardDropStichZone,(message) =>{
+            this.cards.forEach(element => {
+                if(message.id == element.id){
+                    element.input.enabled = false;
+                    element.x = message.card.x;
+                    element.y = message.card.y;
+                }
+            });
+        })
         //Der Server schickt eine Nachricht, dass eine Karte von einem Mitspieler aus seiner Hand bewegt wurde. Die Texture dieser Karte muss geupdatet werden(verdeckt oder nicht verdeckt).
         this.room.onMessage(ClientMessage.CardUpdate,(message) =>{
             this.cards.forEach(element => {
@@ -360,13 +372,14 @@ export default class GaigelMode2v2 extends Phaser.Scene
             this.cards.forEach(element => {
                 element.setDraggAble(true);
             })
+            if(this.trumpfCard){
+                this.trumpfCard.setDraggAble(false);
+            }
+            
         })
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
             this.firstTurn = false;
-            if(this.button){
-                this.button.destroy();
-            }
             this.destroyAllMeldeButtons();
             this.cards.forEach(element => {
                 element.setDraggAble(false);
@@ -397,6 +410,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
                     element.setTexture(element.cardname)
                     element.setInteractive(undefined,undefined,true);
                     element.draggable = false;
+                    console.log(element.draggable);
                     this.trumpfCard = element;          //speichere die Trumpfkarte
                 }
             })
@@ -412,10 +426,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
                         card.y = this.gameHeight-125;
                         card.setTexture(card.cardback);
                         card.input.enabled = false;
-                        console.log(id);
                         this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
-                        console.log(card.x);
-                        console.log(card.y);
                     }
                 })     
             });
@@ -465,12 +476,17 @@ export default class GaigelMode2v2 extends Phaser.Scene
             //vertausche die Position der beiden Karten
             this.trumpfCard.x = oldTrumpf.x;
             this.trumpfCard.y = oldTrumpf.y;
-            this.trumpfCard.draggable = false;
-            this.trumpfCard.setInteractive(undefined,undefined,true);
-            oldTrumpf.draggable = false;
+            this.trumpfCard.setDraggAble(false);
+            oldTrumpf.setDraggAble(false);
             oldTrumpf.setInteractive(undefined,undefined,false);
             oldTrumpf.setTexture(oldTrumpf.cardback);
             
+        })
+
+        this.room.onMessage(ClientMessage.updateAllCards,(message) =>{
+            this.cards.forEach(element => {
+                this.room.send(ClientMessage.CardMove,{card:element, id:element.id});
+           });
         })
     }
 

@@ -213,11 +213,18 @@ export class GaigelRoom extends Room<GaigelState> {
     client.send(ClientMessage.EndTurn)
     if(this.clientCount == this.maxPlayer){  //das Spiel startet, sobald die Anzahl der Clients der maximal Spieleranzahl entspricht
       this.gameIsRunning = true;
-      this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig das Spieler 1 oder Spieler 2 zuerst dran ist
+      this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig welcher Spieler zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
       if(this.clientCount == 2){
         this.clients[1].send(ClientMessage.UpdateDeckPosition);
+      }
+      else if (this.clientCount == 4){
+        for(var i = 0; i < this.clientCount; i++){
+          this.clients[i].send(ClientMessage.setPos,{Pos: i});
+        }
+        this.clients[2].send(ClientMessage.UpdateDeckPosition);
+        this.clients[3].send(ClientMessage.UpdateDeckPosition);
       }
       
     }
