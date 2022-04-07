@@ -148,7 +148,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 this.ownZone.updateCardPosition();      //aktualisiere die neuen Positionen der Handkarten
                 this.room.send(ClientMessage.CardUpdate, {card:this.tempCard, id:this.tempCard.id});    //sende eine Nachricht an den Server zur Synchronisierung des Kartenbildes mit allen anderen Spielern
                 this.ownZone.cards.forEach(element => {
-                    this.room.send(ClientMessage.CardMove, {card:element, id:element.id});              //sende eine Nachricht für jede Karte an, um die neuen Postionen der Karten auf der Hand zu synchronisieren
+                    this.room.send(ClientMessage.CardMove, {card:element, id:element.id, pos: this.pos});              //sende eine Nachricht für jede Karte an, um die neuen Postionen der Karten auf der Hand zu synchronisieren
                 });
                 //gameObject.onHand = false;
             }
@@ -157,7 +157,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.input.on('drag',(pointer,gameObject,dragX,dragY) =>{
             if(!gameObject.draggable) return;
-            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id})
+            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id, pos: this.pos})
             gameObject.dragging = true;
             gameObject.x = dragX;
             gameObject.y = dragY;
@@ -179,7 +179,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }  
             }
-            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
+            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id, pos: this.pos});
             
 
             
@@ -255,7 +255,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     gameObject.onHand = false;
                     gameObject.draggable = false;
                     this.room.send(ClientMessage.stealTrumpf, {newTrumpf: gameObject.id, oldTrumpf: this.trumpfCard.id, oldTrumpfX: this.trumpfCard.x, oldTrumpfY: this.trumpfCard.y});
-                    this.room.send(ClientMessage.CardMove, {card:this.trumpfCard, id:this.trumpfCard.id});
+                    this.room.send(ClientMessage.CardMove, {card:this.trumpfCard, id:this.trumpfCard.id, pos: this.pos});
                     this.trumpfCard = gameObject;
                 }
                 else{
@@ -283,24 +283,42 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
 
         //------------Funktionen welche beim eintreffen von Nachrichten vom Server ausgeführt werden-----------------
-        //sobald ein anderer Spieler eine Karte bewegt, wird das Spielfeld dementsprechend aktualisiert
+        //sobald ein anderer Spieler eine Karte bewegt, wird das Spielfeld dementsprechend aktualisiert, je nachdem ob sich der Spiel auf selselben oder gegenüberliegenden Spielseite befindet, muss die Bewegung der Karte unterschiedlich aktualisiert werden
         this.room.onMessage(ClientMessage.CardMove,(message) =>{
-            this.cards.forEach(element => {
-                if(message.id == element.id){
-                    if(message.card.x > this.centerX){
-                        element.x = this.centerX -(message.card.x - this.centerX);
+            var sameSite = false;
+            if((message.pos == 1 || message.pos == 2) && (this.pos == 1 || this.pos == 2)){ 
+                sameSite = true;
+            }
+            if((message.pos == 3 || message.pos == 4) && (this.pos == 3 || this.pos == 4)){ 
+                sameSite = true;
+            }
+            if(sameSite){
+                this.cards.forEach(element => {
+                    if(message.id == element.id){
+                        element.x = message.card.x;
+                        element.y = message.card.y;
                     }
-                    else{
-                        element.x = this.centerX + (this.centerX - message.card.x)
+               });
+            }
+            else{
+                this.cards.forEach(element => {
+                    if(message.id == element.id){
+                        if(message.card.x > this.centerX){
+                            element.x = this.centerX -(message.card.x - this.centerX);
+                        }
+                        else{
+                            element.x = this.centerX + (this.centerX - message.card.x)
+                        }
+                        if(message.card.y > this.centerY){
+                            element.y = this.centerY - (message.card.y - this.centerY);
+                        }
+                        else{
+                            element.y = this.centerY + (this.centerY - message.card.y);
+                        }
                     }
-                    if(message.card.y > this.centerY){
-                        element.y = this.centerY - (message.card.y - this.centerY);
-                    }
-                    else{
-                        element.y = this.centerY + (this.centerY - message.card.y);
-                    }
-                }
-           });
+               });
+            }
+            
         })
 
         this.room.onMessage(ClientMessage.startTurn,(message) =>{
@@ -437,7 +455,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                         card.y = this.gameHeight-125;
                         card.setTexture(card.cardback);
                         card.input.enabled = false;
-                        this.room.send(ClientMessage.CardMove,{card:card, id:card.id})
+                        this.room.send(ClientMessage.CardMove,{card:card, id:card.id, pos: this.pos});
                     }
                 })     
             });
@@ -496,7 +514,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.room.onMessage(ClientMessage.updateAllCards,(message) =>{
             this.cards.forEach(element => {
-                this.room.send(ClientMessage.CardMove,{card:element, id:element.id});
+                this.room.send(ClientMessage.CardMove,{card:element, id:element.id, pos: this.pos});
            });
         })
 
