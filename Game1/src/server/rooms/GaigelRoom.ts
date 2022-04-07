@@ -220,8 +220,9 @@ export class GaigelRoom extends Room<GaigelState> {
         this.team2[0].send(ClientMessage.UpdateDeckPosition);
       }
       else if (this.clientCount == 4){
+        console.log("test");
         for(var i = 0; i < this.clientCount; i++){
-          this.clients[i].send(ClientMessage.setPos,{Pos: i});
+          this.clients[i].send(ClientMessage.setPos,{pos: i+1});
         }
         this.clients[2].send(ClientMessage.UpdateDeckPosition);
         this.clients[3].send(ClientMessage.UpdateDeckPosition);

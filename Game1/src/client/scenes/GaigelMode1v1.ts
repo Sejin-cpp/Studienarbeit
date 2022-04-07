@@ -264,6 +264,18 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }
             }
+            else{
+                if(gameObject.onHand == false){
+                    gameObject.x = gameObject.input.dragStartX;
+                    gameObject.y = gameObject.input.dragStartY;
+                }
+                else{                                                 //falls die Karte sich in der Hand befunden hat, kommt sie geordnet auf die Hand zurück
+                    this.ownZone.addCard(gameObject);
+                    this.ownZone.updateCardPosition();
+                    gameObject.y = this.ownZone.dropZone.y;
+                    this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+                }
+            }
         });
 
         

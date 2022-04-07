@@ -30,6 +30,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private fiveCardsInHand : boolean = false;
     private firstTurn : boolean = false;
     private text;
+    private pos! : number;
     private button! : Button;
     private eichelMeldenButton! : Button;
     private blattMeldenButton! : Button;
@@ -129,8 +130,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
             i++;
         })*/
         //erstelle Kartenablagestellen
-        this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);
-        this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250,0x00ff00);
         this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250,0xff69b4);
         
        this.room.onStateChange.once(state => { 
@@ -178,9 +177,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.ownZone.updateCardPosition();
                     gameObject.y = this.ownZone.dropZone.y;
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
-                }
-                this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
+                }  
             }
+            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
             
 
             
@@ -260,6 +259,18 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.trumpfCard = gameObject;
                 }
                 else{
+                    this.ownZone.addCard(gameObject);
+                    this.ownZone.updateCardPosition();
+                    gameObject.y = this.ownZone.dropZone.y;
+                    this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+                }
+            }
+            else{
+                if(gameObject.onHand == false){
+                    gameObject.x = gameObject.input.dragStartX;
+                    gameObject.y = gameObject.input.dragStartY;
+                }
+                else{                                                 //falls die Karte sich in der Hand befunden hat, kommt sie geordnet auf die Hand zurück
                     this.ownZone.addCard(gameObject);
                     this.ownZone.updateCardPosition();
                     gameObject.y = this.ownZone.dropZone.y;
@@ -487,6 +498,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.cards.forEach(element => {
                 this.room.send(ClientMessage.CardMove,{card:element, id:element.id});
            });
+        })
+
+        this.room.onMessage(ClientMessage.setPos,(message) =>{
+            console.log(message);
+            this.configurePos(message.pos);
         })
     }
 
@@ -989,25 +1005,32 @@ export default class GaigelMode1v1 extends Phaser.Scene
     }
 
     configurePos(pos : number){
+        this.pos = pos;
         switch(pos){
             case 1:             //eigene KartenZone ist unten links
                 //Werte noch ändern
-                this.enemyZone = new PlayerZone(this,this.centerX,125,750,250);
-                this.enemyZone2 = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
-                this.teamMateZone = new PlayerZone(this,this.centerX,125,750,250);
-                this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250);
+                this.enemyZone = new PlayerZone(this,this.centerX-400,125,750,250,0xff0000);
+                this.enemyZone2 = new PlayerZone(this,this.centerX+400,this.gameHeight-125,750,250,0xff0000);
+                this.teamMateZone = new PlayerZone(this,this.centerX+400,125,750,250,0x0000ff);
+                this.ownZone = new PlayerZone(this,this.centerX-400,this.gameHeight-125,750,250,0x00ff00);
                 break;
             case 2:             //eigene KartenZone ist unten rechts
+                this.enemyZone = new PlayerZone(this,this.centerX+400,125,750,250,0xff0000);
+                this.enemyZone2 = new PlayerZone(this,this.centerX-400,this.gameHeight-125,750,250,0xff0000);
+                this.teamMateZone = new PlayerZone(this,this.centerX-400,125,750,250,0x0000ff);
+                this.ownZone = new PlayerZone(this,this.centerX+400,this.gameHeight-125,750,250,0x00ff00);
                 break;      
             case 3:             //eigene KartenZone ist unten links    
-                this.cards.forEach(element => {
-                    element.x = this.centerX-200;
-                });
+                this.enemyZone = new PlayerZone(this,this.centerX-400,125,750,250,0xff0000);
+                this.enemyZone2 = new PlayerZone(this,this.centerX+400,this.gameHeight-125,750,250,0xff0000);
+                this.teamMateZone = new PlayerZone(this,this.centerX+400,125,750,250,0x0000ff);
+                this.ownZone = new PlayerZone(this,this.centerX-400,this.gameHeight-125,750,250,0x00ff00);
                 break;  
             case 4:             //eigene KartenZone ist unten rechts
-                this.cards.forEach(element => {
-                    element.x = this.centerX-200;
-                });
+                this.enemyZone = new PlayerZone(this,this.centerX+400,125,750,250,0xff0000);
+                this.enemyZone2 = new PlayerZone(this,this.centerX-400,this.gameHeight-125,750,250,0xff0000);
+                this.teamMateZone = new PlayerZone(this,this.centerX-400,125,750,250,0x0000ff);
+                this.ownZone = new PlayerZone(this,this.centerX+400,this.gameHeight-125,750,250,0x00ff00);
                 break;
         }
     }

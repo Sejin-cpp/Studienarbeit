@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import 'regenerator-runtime/runtime'
 import GaigelMode1v1 from './scenes/GaigelMode1v1'
+import GaigelMode2v2 from './scenes/GaigelMode2v2'
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
