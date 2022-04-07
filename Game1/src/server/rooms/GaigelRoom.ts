@@ -197,9 +197,9 @@ export class GaigelRoom extends Room<GaigelState> {
   }
 
   onJoin (client: Client, options: any) {
-    
+    console.log(this.clients[0].sessionId);
     this.state.addPlayer(client.sessionId,this.clientCount+1)
-    if(this.clientCount % 2 == 0){
+    if(this.clientCount % 2 == 0 || (this.team1.length == 0)){
       this.team1.push(client);
     }
     else{
@@ -217,7 +217,7 @@ export class GaigelRoom extends Room<GaigelState> {
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
       if(this.clientCount == 2){
-        this.clients[1].send(ClientMessage.UpdateDeckPosition);
+        this.team2[0].send(ClientMessage.UpdateDeckPosition);
       }
       else if (this.clientCount == 4){
         for(var i = 0; i < this.clientCount; i++){
@@ -233,29 +233,35 @@ export class GaigelRoom extends Room<GaigelState> {
 
   onLeave (client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
+    var clientIndex = this.team1.findIndex((clientT) => clientT == client);
+    if(clientIndex == -1){
+      this.team2.splice(clientIndex,1);
+    }
+    else{
+      this.team1.splice(clientIndex,1);
+    }
     this.state.removePlayer(client.sessionId);
     this.clientCount--;
     if(this.gameIsRunning){                         //falls ein Spieler das laufende Spiel verlässt, verliert sein Team
-      var playerIndex = this.team1.findIndex((clientT) => clientT == client);   //überprüfe in welchem Team sich der Spieler befand, sein Team verliert dann
-      if(playerIndex == -1){ 
+      this.gameIsRunning = false;
+      if(clientIndex == -1){ 
         this.team1.forEach(clientT => {
-          client.send(ClientMessage.youAreTheWinner);
+          clientT.send(ClientMessage.youAreTheWinner);
         })
         this.team2.forEach(clientT => {
-          client.send(ClientMessage.youAreTheLoser);
+          clientT.send(ClientMessage.youAreTheLoser);
         })
         console.log("Team1 wins");
       }
       else{
         this.team2.forEach(clientT => {
-          client.send(ClientMessage.youAreTheWinner);
+          clientT.send(ClientMessage.youAreTheWinner);
         })
         this.team1.forEach(clientT => {
-          client.send(ClientMessage.youAreTheLoser);
+          clientT.send(ClientMessage.youAreTheLoser);
         })
         console.log("Team2 wins");
       }
-      this.disconnect();
     }
     
   }

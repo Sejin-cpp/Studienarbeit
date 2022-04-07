@@ -176,8 +176,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     gameObject.y = this.ownZone.dropZone.y;
                     this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
                 }
-                this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
+                
             }
+            this.room.send(ClientMessage.CardMove, {card:this.tempCard, id:this.tempCard.id});
             
 
             
@@ -298,7 +299,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
             text: 'Auf Dissle',
             depth: 1,
             texture: 'button',
-            scale: 0.7
+            scale: 0.7,
+            font: "36px Arial"
            })
 
            this.button.on('pointerdown', (pointer,gameObject) =>{
@@ -454,10 +456,16 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.room.onMessage(ClientMessage.youAreTheWinner,(message) =>{
             this.text = this.add.text(this.centerX-120,this.centerY+270,"You Won",{ font: "60px Arial" });
+            this.cards.forEach(element => {
+                element.setDraggAble(false);
+            })
         })
 
         this.room.onMessage(ClientMessage.youAreTheLoser,(message) =>{
             this.text = this.add.text(this.centerX-120,this.centerY+270,"You Lose",{ font: "60px Arial" });
+            this.cards.forEach(element => {
+                element.setDraggAble(false);
+            })
         })
 
         this.room.onMessage(ClientMessage.stealTrumpf,(message) =>{
@@ -855,7 +863,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeEichel',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.6,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.eichelMeldenButton.on('pointerdown', (pointer,gameObject) =>{
@@ -884,7 +893,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeBlatt',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.6,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.blattMeldenButton.on('pointerdown', (pointer,gameObject) =>{
@@ -914,7 +924,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeHerz',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.6,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.herzMeldenButton.on('pointerdown', (pointer,gameObject) =>{
@@ -943,7 +954,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeSchelle',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.6,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.schellenMeldenButton.on('pointerdown', (pointer,gameObject) =>{
