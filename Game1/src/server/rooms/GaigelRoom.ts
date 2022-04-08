@@ -189,14 +189,6 @@ export class GaigelRoom extends Room<GaigelState> {
   }
 
   onJoin (client: Client, options: any) {
-    console.log(this.clients[0].sessionId);
-    this.state.addPlayer(client.sessionId,this.clientCount+1)
-    if(this.clientCount % 2 == 0 || (this.team1.length == 0)){
-      this.team1.push(client);
-    }
-    else{
-      this.team2.push(client);
-    }
     this.clientCount++;
     if(this.setCards == false){
       this.state.setCardsInDeck();
@@ -210,12 +202,26 @@ export class GaigelRoom extends Room<GaigelState> {
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
       this.clients[this.turnCounter].send(ClientMessage.setTrumpfColor);             //setze Trumpffarbe
       if(this.clientCount == 2){
+        this.state.addPlayer(this.clients[0].sessionId,1);
+        this.state.addPlayer(this.clients[1].sessionId,2);
+        this.team1.push(this.clients[0]);
+        this.team2.push(this.clients[1]);
         this.team2[0].send(ClientMessage.UpdateDeckPosition);
       }
       else if (this.clientCount == 4){
         console.log("test");
+        var teamNr = 1;
         for(var i = 0; i < this.clientCount; i++){
           this.clients[i].send(ClientMessage.setPos,{pos: i+1});
+          this.state.addPlayer(this.clients[i].sessionId,teamNr);
+          teamNr+1;
+          if(teamNr > 2){
+            teamNr = 1;
+            this.team2.push(this.clients[i]);
+          }
+          else{
+            this.team1.push(this.clients[i]);
+          }
         }
         this.clients[2].send(ClientMessage.UpdateDeckPosition);
         this.clients[3].send(ClientMessage.UpdateDeckPosition);
