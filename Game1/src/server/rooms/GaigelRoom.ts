@@ -8,7 +8,6 @@ export class GaigelRoom extends Room<GaigelState> {
   private setCards = false;
   private turnCounter = 0;
   private aufDisslePlayer! : Client;
-  private trumpfColorSet : boolean = false;
   private team1 : Client[] = new Array<Client>();
   private team2 : Client[] = new Array<Client>();
   private gameIsRunning : boolean = false;
@@ -22,10 +21,7 @@ export class GaigelRoom extends Room<GaigelState> {
       this.state.firstTurn = false;
       this.aufDisslePlayer = client;
       this.state.playerAufDissle(client.sessionId);
-      client.send(ClientMessage.YourTurn);
-      this.clients[0].send(ClientMessage.setTrumpfColor);
-      this.trumpfColorSet = true;
-      
+      client.send(ClientMessage.YourTurn);   
   });
 
     //synchronisiere die Trumpffarbe mit den restlichen Clients
@@ -102,10 +98,6 @@ export class GaigelRoom extends Room<GaigelState> {
         if(this.state.countCardInStich == this.clients.length){   //falls jeder Spieler eine Karte auf den Stich gelegt hat, wird der Gewinner ermittelt
           var zaehler = 0;
           var winner = this.state.calculateWinnerOfStich();
-          if(this.trumpfColorSet == false){                        //setze eine Trumpffarbe, falls bisher noch keine festgelegt wurde
-            this.trumpfColorSet = true;
-            this.clients[0].send(ClientMessage.setTrumpfColor);
-          }
           //falls der Spieler, welcher auf Dissle geht, einen Stich gewonnen hat, verliert sein Team
           if(winner.status == "NoDissle"){
             var playerIndex = this.team1.findIndex((client) => client == this.aufDisslePlayer);   //überprüfe in welchem Team sich der auf Dissle Spieler befindet, dieses Team verliert dann
@@ -216,6 +208,7 @@ export class GaigelRoom extends Room<GaigelState> {
       this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig welcher Spieler zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
+      this.clients[this.turnCounter].send(ClientMessage.setTrumpfColor);             //setze Trumpffarbe
       if(this.clientCount == 2){
         this.team2[0].send(ClientMessage.UpdateDeckPosition);
       }

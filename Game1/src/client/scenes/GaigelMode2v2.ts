@@ -416,10 +416,16 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //legt die erste Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
+            console.log("Setze Trumpf")
             if(this.text){
                 this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
             }
-            this.cards[0].x = this.centerX-200;
+            if((this.pos == 1) || (this.pos == 2)){
+                this.cards[0].x = this.centerX-200;
+            }
+            else{
+                this.cards[0].x = this.centerX+200;
+            }
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
             this.trumpfCard = this.cards[0];    	  //speichere Trumpfkarte
@@ -429,12 +435,18 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.updateTrumpfColor,(message) =>{
+            console.log("update");
             if(this.text){
                 this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
             }               
             this.cards.forEach(element => {
                 if(element.id == message.id){
-                    element.x = this.centerX+200;
+                    if((this.pos == 1) || (this.pos == 2)){
+                        element.x = this.centerX-200;
+                    }
+                    else{
+                        element.x = this.centerX+200;
+                    }
                     element.y = this.centerY;
                     element.setTexture(element.cardname)
                     element.setInteractive(undefined,undefined,true);
@@ -451,7 +463,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 this.cards.forEach(card => {
                     if(card.id == id){
                         card.depth = 1;
-                        card.x = this.centerX-500;
+                        card.x = 100;
                         card.y = this.gameHeight-125;
                         card.setTexture(card.cardback);
                         card.input.enabled = false;
@@ -519,7 +531,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.setPos,(message) =>{
-            console.log(message);
+            console.log(message.pos);
             this.configurePos(message.pos);
         })
     }
