@@ -316,15 +316,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
            })
 
            this.button.on('pointerdown', (pointer,gameObject) =>{
-            //if (pointer.leftButtonDown())
-            //{
                 console.log("ButtonClicked")
                 this.firstTurn = false;
                 this.room.send(ClientMessage.AufDissle);
                 this.button.text.destroy();
                 this.button.destroy();
-        
-            //}
             });
         })
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren

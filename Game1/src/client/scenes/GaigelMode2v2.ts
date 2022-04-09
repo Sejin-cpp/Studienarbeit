@@ -125,10 +125,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
         });
         Phaser.Actions.Shuffle(this.cards); //Das Array, welches alle Karten enthält, wird gemischt
         var i = 1;
-       /* this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
+        this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
             element.setDepth(i);
             i++;
-        })*/
+        })
         //erstelle Kartenablagestellen
         this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250,0xff69b4);
         
@@ -330,19 +330,16 @@ export default class GaigelMode1v1 extends Phaser.Scene
             text: 'Auf Dissle',
             depth: 1,
             texture: 'button',
-            scale: 0.7
+            scale: 0.7,
+            font: "36px Arial"
            })
 
            this.button.on('pointerdown', (pointer,gameObject) =>{
-            //if (pointer.leftButtonDown())
-            //{
                 console.log("ButtonClicked")
                 this.firstTurn = false;
                 this.room.send(ClientMessage.AufDissle);
                 this.button.text.destroy();
                 this.button.destroy();
-        
-            //}
             });
         })
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
@@ -463,7 +460,12 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 this.cards.forEach(card => {
                     if(card.id == id){
                         card.depth = 1;
-                        card.x = 100;
+                        if((this.pos == 1) || (this.pos == 3)){
+                            card.x = 100;
+                        }
+                        else{
+                            card.x = 1700;
+                        }
                         card.y = this.gameHeight-125;
                         card.setTexture(card.cardback);
                         card.input.enabled = false;
@@ -933,7 +935,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeBlatt',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.5,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.blattMeldenButton.on('pointerdown', (pointer,gameObject) =>{
@@ -963,7 +966,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeHerz',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.5,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.herzMeldenButton.on('pointerdown', (pointer,gameObject) =>{
@@ -992,7 +996,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 text: 'MeldeSchelle',
                 depth: 1,
                 texture: 'button',
-                scale: 0.5
+                scale: 0.5,
+                font: "24px Arial"
             })
             //erstelle ein Button, welches bei Ausführung das Kartenpaar an den Server meldet
             this.schellenMeldenButton.on('pointerdown', (pointer,gameObject) =>{

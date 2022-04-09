@@ -200,7 +200,6 @@ export class GaigelRoom extends Room<GaigelState> {
       this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig welcher Spieler zuerst dran ist
       this.clients[this.turnCounter].send(ClientMessage.YourTurn);
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
-      this.clients[this.turnCounter].send(ClientMessage.setTrumpfColor);             //setze Trumpffarbe
       if(this.clientCount == 2){
         this.state.addPlayer(this.clients[0].sessionId,1);
         this.state.addPlayer(this.clients[1].sessionId,2);
@@ -209,12 +208,11 @@ export class GaigelRoom extends Room<GaigelState> {
         this.team2[0].send(ClientMessage.UpdateDeckPosition);
       }
       else if (this.clientCount == 4){
-        console.log("test");
         var teamNr = 1;
         for(var i = 0; i < this.clientCount; i++){
           this.clients[i].send(ClientMessage.setPos,{pos: i+1});
           this.state.addPlayer(this.clients[i].sessionId,teamNr);
-          teamNr+1;
+          teamNr += 1;
           if(teamNr > 2){
             teamNr = 1;
             this.team2.push(this.clients[i]);
@@ -226,7 +224,7 @@ export class GaigelRoom extends Room<GaigelState> {
         this.clients[2].send(ClientMessage.UpdateDeckPosition);
         this.clients[3].send(ClientMessage.UpdateDeckPosition);
       }
-      
+      this.clients[this.turnCounter].send(ClientMessage.setTrumpfColor);             //setze Trumpffarbe
     }
     console.log(client.sessionId, "joined!")
   }
