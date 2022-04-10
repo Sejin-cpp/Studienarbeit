@@ -30,6 +30,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private fiveCardsInHand : boolean = false;
     private firstTurn : boolean = false;
     private text;
+    private turnInfoText;
     private pos! : number;
     private button! : Button;
     private eichelMeldenButton! : Button;
@@ -395,7 +396,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //es ist dein Zug, du kannst Karten bewegen
         this.room.onMessage(ClientMessage.YourTurn,(message) =>{
-            this.cards.forEach(element => {
+        this.turnInfoText = this.add.text(this.centerX-100,this.gameHeight-310,"YOUR TURN",{ font: "36px Arial" });
+        this.cards.forEach(element => {
                 element.setDraggAble(true);
             })
             if(this.trumpfCard){
@@ -405,6 +407,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
+            if(this.turnInfoText){
+                this.turnInfoText.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            }
             this.firstTurn = false;
             this.destroyAllMeldeButtons();
             this.cards.forEach(element => {
@@ -464,7 +469,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                             card.x = 100;
                         }
                         else{
-                            card.x = 1700;
+                            card.x = 1850;
                         }
                         card.y = this.gameHeight-125;
                         card.setTexture(card.cardback);
