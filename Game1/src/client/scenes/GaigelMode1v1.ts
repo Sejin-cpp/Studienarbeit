@@ -121,10 +121,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
         });
         Phaser.Actions.Shuffle(this.cards); //Das Array, welches alle Karten enthält, wird gemischt
         var i = 1;
-       /* this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
+        this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
             element.setDepth(i);
             i++;
-        })*/
+        })
         //erstelle Kartenablagestellen
         this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);
         this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250,0x00ff00);

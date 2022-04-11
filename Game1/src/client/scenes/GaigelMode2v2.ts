@@ -8,7 +8,7 @@ import CardZone from '../../gameObjects/Cardzone'
 import PlayerZone from '../../gameObjects/Playerzone'
 import Button from '../../gameObjects/Button'
 
-export default class GaigelMode1v1 extends Phaser.Scene
+export default class GaigelMode2v2 extends Phaser.Scene
 {
     private client!: Colyseus.Client
     private cards : CardDraggable[]
