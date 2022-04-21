@@ -3,9 +3,12 @@ import CardDraggable from './CardDraggable'
 export default class CardZone {
     dropZone;
     dropZoneOutline;
+    rectangle;
     cards = [];
     constructor(scene,x,y,width,height,color) {
         this.dropZone = scene.add.zone(x,y,width,height).setRectangleDropZone(width,height);
+        this.rectangle = new Phaser.GameObjects.Rectangle(scene,x,y,width,height,color);
+        this.rectangle.depth = 1;
         this.dropZone.setData({ cards: 0 });
         this.dropZoneOutline = scene.add.graphics();
         this.dropZoneOutline.lineStyle(4, color);

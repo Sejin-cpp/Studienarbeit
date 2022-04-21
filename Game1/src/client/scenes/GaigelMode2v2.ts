@@ -129,7 +129,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
             id++;
         });
         Phaser.Actions.Shuffle(this.cards); //Das Array, welches alle Karten enthält, wird gemischt
-        var i = 1;
+        var i = 2;
         this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
             element.setDepth(i);
             i++;

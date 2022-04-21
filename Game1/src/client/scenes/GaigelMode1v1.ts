@@ -28,6 +28,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private fiveCardsInHand : boolean = false;
     private firstTurn : boolean = false;
     private text;
+    private pos! : number;
     private button! : Button;
     private eichelMeldenButton! : Button;
     private blattMeldenButton! : Button;
@@ -101,6 +102,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
        this.room = await this.client.joinOrCreate<GaigelState>('my_room');
        this.background = this.add.sprite(0,0,'background');
        this.background.scale = 2;
+       this.background.depth = 0;
        console.log(this.room.sessionId)
 
        //erstelle Kartendeck
@@ -124,14 +126,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
             id++;
         });
         Phaser.Actions.Shuffle(this.cards); //Das Array, welches alle Karten enthält, wird gemischt
-        var i = 1;
+        var i = 2;
         this.cards.forEach(element =>{      //Reihenfolge wird festgelegt, Deck wird gemischt
             element.setDepth(i);
             i++;
         })
-        //erstelle Kartenablagestellen
-        this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);
-        this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250,0x00ff00);
+        //erstelle Kartenablagestelle
+
         this.stichZone = new CardZone(this,this.centerX,this.centerY,150,250,0xff69b4);
         
        this.room.onStateChange.once(state => { 
@@ -401,12 +402,19 @@ export default class GaigelMode1v1 extends Phaser.Scene
             if(this.text){
                 this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
             }
+            if(this.pos == 1){
+                this.cards[0].x = this.centerX-200;
+            }
+            else{
+                this.cards[0].x = this.centerX+200;
+            }
             this.cards[0].x = this.centerX-200;
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
             this.trumpfCard = this.cards[0];    	  //speichere Trumpfkarte
             this.cards[0].setInteractive(undefined,undefined,true);
             this.cards[0].draggable = false;
+            console.log(this.cards[0]);
             this.room.send(ClientMessage.updateTrumpfColor,{id:this.cards[0].id, color: this.cards[0].color})
         })
         //legt die in der Nachricht enthaltenden Karte als Trumpfkarte fest
@@ -416,7 +424,12 @@ export default class GaigelMode1v1 extends Phaser.Scene
             }               
             this.cards.forEach(element => {
                 if(element.id == message.id){
-                    element.x = this.centerX+200;
+                    if(this.pos == 1){
+                        element.x = this.centerX-200;
+                    }
+                    else{
+                        element.x = this.centerX+200;
+                    }
                     element.y = this.centerY;
                     element.setTexture(element.cardname)
                     element.setInteractive(undefined,undefined,true);
@@ -504,6 +517,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.cards.forEach(element => {
                 this.room.send(ClientMessage.CardMove,{card:element, id:element.id});
            });
+        })
+
+        this.room.onMessage(ClientMessage.setPos,(message) =>{
+            console.log(message.pos);
+            this.configurePos(message.pos);
         })
     }
 
@@ -1008,6 +1026,13 @@ export default class GaigelMode1v1 extends Phaser.Scene
         }
         
     }
+
+    configurePos(pos : number){
+        this.pos = pos;
+        this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);
+        this.ownZone = new PlayerZone(this,this.centerX,this.gameHeight-125,750,250,0x00ff00);
+    }
+
     update(t: number, dt: number)
     {
         

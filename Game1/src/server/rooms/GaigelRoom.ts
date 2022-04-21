@@ -205,6 +205,8 @@ export class GaigelRoom extends Room<GaigelState> {
         this.state.addPlayer(this.clients[1].sessionId,2);
         this.team1.push(this.clients[0]);
         this.team2.push(this.clients[1]);
+        this.team1[0].send(ClientMessage.setPos,{pos: 1});
+        this.team2[0].send(ClientMessage.setPos,{pos: 2});
         this.team2[0].send(ClientMessage.UpdateDeckPosition);
       }
       else if (this.clientCount == 4){
