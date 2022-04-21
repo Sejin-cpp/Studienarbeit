@@ -1,6 +1,4 @@
 import { Schema, type, ArraySchema } from '@colyseus/schema'
-import CardDraggable from '../../../gameObjects/CardDraggable'
-import {FirstStich} from '../../../types/firstStich'
 
 
 class CardState extends Schema
