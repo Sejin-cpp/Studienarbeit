@@ -13,7 +13,7 @@ export default Arena({
         /**
          * Define your room handlers:
          */
-        gameServer.define('my_room', GaigelRoom, {playerCount: 2});
+        gameServer.define('my_room', GaigelRoom, {playerCount: 4});
         
     },
 
@@ -22,7 +22,6 @@ export default Arena({
          * Bind your custom express routes here:
          */
         app.get("/", (req, res) => {
-            res.send("It's time to kick ass and chew bubblegum!");
         });
 
         /**
