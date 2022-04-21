@@ -20,6 +20,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private gameHeight;
     private centerX;
     private centerY;
+    private background! : Phaser.GameObjects.Sprite;
     private ownZone! : PlayerZone;
     private enemyZone! : PlayerZone;
     private stichZone! : CardZone;
@@ -89,14 +90,17 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.load.image('cardback','assets/cardback.png')
         this.load.image('button','assets/button.png')
+
+        this.load.image('background', 'assets/background.jpg');
     }
 
     async create()
     {
        
        //this.input.mouse.disableContextMenu();
-       this.room = await this.client.joinOrCreate<GaigelState>('my_room')
-
+       this.room = await this.client.joinOrCreate<GaigelState>('my_room');
+       this.background = this.add.sprite(0,0,'background');
+       this.background.scale = 2;
        console.log(this.room.sessionId)
 
        //erstelle Kartendeck
@@ -326,7 +330,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
         this.room.onMessage(ClientMessage.secondTurn,(message) =>{
             console.log("info");
-            this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "24px Arial" });
+            this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "30px Arial", color: '0x000000' });
         })
 
         //Falls man Spieler 2 ist, muss die Position des Decks geändert werden
@@ -463,14 +467,14 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.youAreTheWinner,(message) =>{
-            this.text = this.add.text(this.centerX-120,this.centerY+270,"You Won",{ font: "60px Arial" });
+            this.text = this.add.text(this.centerX-120,this.centerY+270,"You Won",{ font: "60px Arial" , color: '0x000000'});
             this.cards.forEach(element => {
                 element.setDraggAble(false);
             })
         })
 
         this.room.onMessage(ClientMessage.youAreTheLoser,(message) =>{
-            this.text = this.add.text(this.centerX-120,this.centerY+270,"You Lose",{ font: "60px Arial" });
+            this.text = this.add.text(this.centerX-120,this.centerY+270,"You Lose",{ font: "60px Arial" , color: '0x000000'});
             this.cards.forEach(element => {
                 element.setDraggAble(false);
             })
