@@ -408,7 +408,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
             else{
                 this.cards[0].x = this.centerX+200;
             }
-            this.cards[0].x = this.centerX-200;
             this.cards[0].y = this.centerY;
             this.cards[0].setTexture(this.cards[0].cardname)
             this.trumpfCard = this.cards[0];    	  //speichere Trumpfkarte
