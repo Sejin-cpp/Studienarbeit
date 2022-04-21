@@ -7,11 +7,11 @@ export default class CardZone {
     cards = [];
     constructor(scene,x,y,width,height,color) {
         this.dropZone = scene.add.zone(x,y,width,height).setRectangleDropZone(width,height);
-        this.rectangle = new Phaser.GameObjects.Rectangle(scene,x,y,width,height,color);
-        this.rectangle.depth = 1;
+        this.rectangle = scene.add.rectangle(x,y,width,height,{fillColor: '0x000000'});
+        this.rectangle.depth = 2;
         this.dropZone.setData({ cards: 0 });
         this.dropZoneOutline = scene.add.graphics();
-        this.dropZoneOutline.lineStyle(4, color);
+        this.dropZoneOutline.lineStyle(6, color);
         this.dropZoneOutline.strokeRect(this.dropZone.x - this.dropZone.input.hitArea.width / 2, this.dropZone.y - this.dropZone.input.hitArea.height / 2, this.dropZone.input.hitArea.width, this.dropZone.input.hitArea.height)   
     }
 
