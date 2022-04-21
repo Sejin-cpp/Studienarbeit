@@ -1,7 +1,7 @@
 import Arena from "@colyseus/arena";
 import { monitor } from "@colyseus/monitor";
 import path from 'path';
-import serveIndex from 'serve-index';
+
 import express from 'express';
 
 
@@ -10,6 +10,7 @@ import express from 'express';
  */
 import { LobbyRoom } from 'colyseus';
 import { GaigelRoom } from "./rooms/GaigelRoom";
+import { ChatRoom } from "./rooms/01-chat-room";
 
 
 export default Arena({
@@ -24,6 +25,16 @@ export default Arena({
         gameServer
             .define("my_room", GaigelRoom)
             .enableRealtimeListing();
+
+        gameServer.define("chat", ChatRoom)
+            .enableRealtimeListing();
+
+        // Register ChatRoom with initial options, as "chat_with_options"
+        // onInit(options) will receive client join options + options registered here.
+        gameServer.define("chat_with_options", ChatRoom, {
+            custom_options: "you can use me on Room#onCreate"
+        });
+
         gameServer
             .onShutdown(function(){
                 console.log(`game server is going down.`);
@@ -32,7 +43,7 @@ export default Arena({
     },
 
     initializeExpress: (app) => {
-        app.use('/', serveIndex(path.join(__dirname, "static"), {'icons': true}))
+   
         app.use('/', express.static(path.join(__dirname, "static")));
         /**
          * Bind your custom express routes here:
