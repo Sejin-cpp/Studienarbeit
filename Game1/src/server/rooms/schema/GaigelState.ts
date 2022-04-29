@@ -406,16 +406,17 @@ export class GaigelState extends Schema
   }
 
   testIfEndGame(){
-    var endeGame = false;
+    var endGame = false;
+    var farbZwang = false;
     if (this.cardsInDeck.length == 0){
-      endeGame = true;
+      farbZwang = true;
     }
     this.teams.forEach(teamPoints => {
       if(teamPoints >= 101){
-        endeGame = true;
+        endGame = true;
       }
     })
-    return endeGame;
+    return {farbZwang: farbZwang, endGame: endGame};
   }
 
   calculateWinner(){

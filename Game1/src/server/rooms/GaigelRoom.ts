@@ -140,7 +140,8 @@ export class GaigelRoom extends Room<GaigelState> {
           this.clients[this.turnCounter].send(ClientMessage.YourTurn);
         }
       }
-      if(this.state.testIfEndGame()){       //teste ob das Spiel vorbei ist
+      var endZug = this.state.testIfEndGame();
+      if(endZug.endGame){       //teste ob das Spiel vorbei ist
         this.gameIsRunning = false;
         var teamNr = this.state.calculateWinner();    //ermittele das Team welches gewonnen hat und sende allen Spieler die Info, ob sie gewonnen oder verloren haben
         if(teamNr.WinnerTeam == 1){
@@ -160,6 +161,9 @@ export class GaigelRoom extends Room<GaigelState> {
           })
         }
     
+      }
+      else if(endZug.farbZwang){
+        this.broadcast(ClientMessage.farbZwang,message);
       }
     });
 

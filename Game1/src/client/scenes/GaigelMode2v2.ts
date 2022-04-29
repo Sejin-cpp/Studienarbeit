@@ -44,7 +44,8 @@ export default class GaigelMode2v2 extends Phaser.Scene
     private herzGemeldet : boolean = false;
     private schellenGemeldet : boolean = false;
     private pairGemeldet : boolean = false;
-
+    //Bei leeren Talon
+    private farbZwang : boolean = false;
     
 	constructor()
 	{
@@ -194,7 +195,7 @@ export default class GaigelMode2v2 extends Phaser.Scene
             if(!gameObject.draggable) return;
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
-                if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (gameObject.hidden || (this.firstTurn && gameObject.symbol == "ass")) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (!gameObject.hidden || this.firstTurn) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
                     if(this.button){
                         this.button.text.destroy();
                         this.button.destroy();
@@ -544,6 +545,10 @@ export default class GaigelMode2v2 extends Phaser.Scene
         this.room.onMessage(ClientMessage.setPos,(message) =>{
             console.log(message.pos);
             this.configurePos(message.pos);
+        })
+
+        this.room.onMessage(ClientMessage.farbZwang,(message) =>{
+            this.farbZwang = true;
         })
     }
 
