@@ -89,4 +89,15 @@ export default class PlayerZone extends CardZone {
 
         return {eichelMatch: eichelMatch, eichel: eichelArray, blattMatch: blattMatch, blatt: blattArray,herzMatch: herzMatch, herz: herzArray, schellenMatch: schellenMatch, schellen: schellenArray}
     }
+    //diese Methode überprüft, ob diese Hand eine Karte besitzt, dessen Farbe mit der übergebenen Farbe übereinstimmt. Diese Methode wird beim Farbzwang eingesetzt, da da der Spieler eine Karte derselben Farbe legen muss
+    testForFarbZwang(color){
+        var colorInHand = false;
+        this.cards.forEach(card => { 
+            console.log(card.color);
+            if(card.color == color){
+                colorInHand = true;
+            }
+        })
+        return colorInHand;
+    }
 }

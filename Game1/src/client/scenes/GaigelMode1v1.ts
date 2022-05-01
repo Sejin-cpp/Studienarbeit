@@ -43,7 +43,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private pairGemeldet : boolean = false;
     //Bei leeren Talon
     private farbZwang : boolean = false;
-    
+    private firstCard! : CardDraggable;
+    private firstCardOnStich : boolean = false;    
 	constructor()
 	{
 		super('hello-world')
@@ -195,7 +196,18 @@ export default class GaigelMode1v1 extends Phaser.Scene
             if(!gameObject.draggable) return;
             //----------------------------Ablegen einer Karte auf Stichzone-----------------------------------------------------//
             if(target == this.stichZone.dropZone){
-                if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && (!gameObject.hidden || this.firstTurn) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte verdeckt gelegt wird. Ausnahme ist der erste Zug, wo ein aufgedecktes Ass gelegt werden darf. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                var cardOnStichOk : boolean = true;
+                if((this.pairGemeldet == false) && !this.stichSet && this.fiveCardsInHand && ( (!gameObject.hidden && !this.firstTurn) || (this.firstTurn && (gameObject.symbol == "ass" || gameObject.hidden) ) ) || ( this.pairGemeldet && gameObject.gemeldet)){         //falls der Spieler noch keine Karte auf dem Stich abgelegt hat und fünf Karten auf der Hand hat, kommt die Karte auf die Hand zurück. Es wird auch überprüft ob die Karte offen gelegt wird. Ausnahme ist der erste Zug, wo ein verdeckte Karten gelegen werden dürfen. Falls der Spieler ein Koenig-Ober Paar gemeldet hat, muss eines dieser Karten abgelegt werden
+                    if(this.farbZwang && !this.firstCardOnStich){
+                        if(this.ownZone.testForFarbZwang(this.firstCard.color) && (gameObject.color != this.firstCard.color)){          //falls der Spieler versucht eine Karte zu legen, welche eine andere Farbe als die der ersten Karte auf dem akutellen Stich besitzt. obwohl eine Karte derselben Farbe auf der Hand hat, wird dies nicht zugelassen
+                            cardOnStichOk = false;
+                        }
+                    }
+                }
+                else{
+                    cardOnStichOk = false;
+                }
+                if(cardOnStichOk){
                     if(this.button){
                         this.button.text.destroy();
                         this.button.destroy();
@@ -211,16 +223,19 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     this.destroyAllMeldeButtons();
                     console.log("Karte ",gameObject.id ," auf Stich gelegt");
                 }
-                else if(gameObject.onHand == false){
-                    gameObject.x = gameObject.input.dragStartX;
-                    gameObject.y = gameObject.input.dragStartY;
-                }
                 else{
-                    this.ownZone.addCard(gameObject);
-                    this.ownZone.updateCardPosition();
-                    gameObject.y = this.ownZone.dropZone.y;
-                    this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+                    if(gameObject.onHand == false){
+                        gameObject.x = gameObject.input.dragStartX;
+                        gameObject.y = gameObject.input.dragStartY;
+                    }
+                    else{
+                        this.ownZone.addCard(gameObject);
+                        this.ownZone.updateCardPosition();
+                        gameObject.y = this.ownZone.dropZone.y;
+                        this.room.send(ClientMessage.CardDropOwnZone, {id:this.tempCard.id});
+                    }
                 }
+                
                  
             }
             //----------------------------Ablegen einer Karte auf eigener Hand-----------------------------------------------------//
@@ -370,6 +385,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     element.input.enabled = false;
                     element.x = message.card.x;
                     element.y = message.card.y;
+                    this.firstCard = element;
                 }
             });
         })
@@ -389,6 +405,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             if(this.trumpfCard){
                 this.trumpfCard.setDraggAble(false);
             }
+            this.firstCardOnStich = message.first;
             
         })
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
@@ -530,6 +547,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
 
         this.room.onMessage(ClientMessage.updatePoints,(message) =>{
+            if(this.pointCounter){
+                this.pointCounter.destroy();
+            }
             var tempString : string = "Team-Punkte: " + message.points;
             this.pointCounter = this.add.text(0,0,tempString,{ font: "60px Arial" , color: '0x000000'});
         })
@@ -1036,7 +1056,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
         }
         
     }
-
     configurePos(pos : number){
         this.pos = pos;
         this.enemyZone = new PlayerZone(this,this.centerX,125,750,250,0xff0000);

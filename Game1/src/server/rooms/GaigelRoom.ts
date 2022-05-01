@@ -126,7 +126,7 @@ export class GaigelRoom extends Room<GaigelState> {
               if(tempclient.sessionId == winner.Id){
                 this.turnCounter = zaehler;
                 console.log(winner.cards)
-                tempclient.send(ClientMessage.YourTurn);                      //der Gewinner ist als nächstes dran
+                tempclient.send(ClientMessage.YourTurn,{first: true});                      //der Gewinner ist als nächstes dran
                 tempclient.send(ClientMessage.winStich,{cards: winner.cards}) //der Gewinner wird informiert und erhält als Info die Karten welche er gewonnen hat                   
               }
               else{
@@ -145,7 +145,7 @@ export class GaigelRoom extends Room<GaigelState> {
           }
         }
         else{
-          this.clients[this.turnCounter].send(ClientMessage.YourTurn);
+          this.clients[this.turnCounter].send(ClientMessage.YourTurn,{first: false});
         }
       }
       var endZug = this.state.testIfEndGame();
@@ -210,7 +210,7 @@ export class GaigelRoom extends Room<GaigelState> {
     if(this.clientCount == this.maxPlayer){  //das Spiel startet, sobald die Anzahl der Clients der maximal Spieleranzahl entspricht
       this.gameIsRunning = true;
       this.turnCounter = Math.floor(Math.random() * this.maxPlayer);   //bestimmte zufällig welcher Spieler zuerst dran ist
-      this.clients[this.turnCounter].send(ClientMessage.YourTurn);
+      this.clients[this.turnCounter].send(ClientMessage.YourTurn, {first: true});
       this.clients[this.turnCounter].send(ClientMessage.startTurn);
       if(this.clientCount == 2){
         this.state.addPlayer(this.clients[0].sessionId,1);
