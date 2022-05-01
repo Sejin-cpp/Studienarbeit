@@ -23,5 +23,6 @@ export enum ClientMessage
     melden,
     updateAllCards,
     setPos,
-    farbZwang
+    farbZwang,
+    updatePoints
 }

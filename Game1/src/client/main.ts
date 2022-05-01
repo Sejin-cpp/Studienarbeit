@@ -17,7 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
 			gravity: { y: 200 }
 		}
 	},
-	scene: [GaigelMode2v2]
+	scene: [GaigelMode1v1]
 }
 
 export default new Phaser.Game(config)

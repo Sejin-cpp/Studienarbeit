@@ -28,6 +28,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
     private fiveCardsInHand : boolean = false;
     private firstTurn : boolean = false;
     private text;
+    private pointCounter;
     private pos! : number;
     private button! : Button;
     private eichelMeldenButton! : Button;
@@ -526,6 +527,11 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
         this.room.onMessage(ClientMessage.farbZwang,(message) =>{
             this.farbZwang = true;
+        })
+
+        this.room.onMessage(ClientMessage.updatePoints,(message) =>{
+            var tempString : string = "Team-Punkte: " + message.points;
+            this.pointCounter = this.add.text(0,0,tempString,{ font: "60px Arial" , color: '0x000000'});
         })
     }
 

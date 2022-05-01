@@ -134,6 +134,14 @@ export class GaigelRoom extends Room<GaigelState> {
               }
               zaehler++;
             })
+            //send updated Points to Clients
+            
+            this.team1.forEach(client => {
+              client.send(ClientMessage.updatePoints,{points: winner.team1Points});
+            })
+            this.team2.forEach(client => {
+              client.send(ClientMessage.updatePoints,{points: winner.team2Points});
+            })
           }
         }
         else{

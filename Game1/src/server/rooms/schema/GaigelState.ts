@@ -389,7 +389,7 @@ export class GaigelState extends Schema
       i++;
     })
     this.countCardInStich = 0;
-    return {Id: winner.id, cards: cardIDs, status: "OK"};
+    return {Id: winner.id, cards: cardIDs, status: "OK", team1Points: this.teams[0], team2Points: this.teams[1]};
   
     
   }
