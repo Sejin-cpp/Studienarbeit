@@ -44,7 +44,8 @@ export default class GaigelMode1v1 extends Phaser.Scene
     //Bei leeren Talon
     private farbZwang : boolean = false;
     private firstCard! : CardDraggable;
-    private firstCardOnStich : boolean = false;    
+    private firstCardOnStich : boolean = false;
+    private firstCardSet : boolean = false;    
 	constructor()
 	{
 		super('hello-world')
@@ -385,7 +386,10 @@ export default class GaigelMode1v1 extends Phaser.Scene
                     element.input.enabled = false;
                     element.x = message.card.x;
                     element.y = message.card.y;
-                    this.firstCard = element;
+                    if(!this.firstCardSet){
+                        this.firstCard = element;
+                        this.firstCardSet = true;               //dieser Boolean sorgt dafür, dass die erste Karte nicht durch die nächste Karte, welche auf dem Stich gelegt wird, ersetzt wird
+                    }
                 }
             });
         })
@@ -411,6 +415,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         //dein Zug ist zuende, du kannst keine Karten bewegen, aber du kannst Karten noch umdrehen
         this.room.onMessage(ClientMessage.EndTurn,(message) =>{
             this.firstTurn = false;
+            this.firstCardSet = false;   
             this.destroyAllMeldeButtons();
             this.cards.forEach(element => {
                 element.setDraggAble(false);
