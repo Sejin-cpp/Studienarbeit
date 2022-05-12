@@ -121,7 +121,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
                 if (pointer.rightButtonDown() && element.onHand && (element.gemeldet == false))
                 {
                     element.input.enabled = false;
-                    this.room.send(ClientMessage.CardFlip,{id: element.id, onHand: element.onHand})
+                    //this.room.send(ClientMessage.CardFlip,{id: element.id, onHand: element.onHand})
                     element.flip()
                     element.input.enabled = true;
                 }
@@ -359,18 +359,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
             });
             
         })
-
-        //Führe einen Kartenflip bei der Karte mit der in der Nachricht übergeben ID aus
-        this.room.onMessage(ClientMessage.CardFlip,(message) =>{
-            if(message.onHand == false){
-                this.cards.forEach(element => {
-                    if(message.id == element.id){
-                        element.flip()
-                    }
-                });
-            }
-        })
-        //Der Server schickt eine Nachricht, dass die Karte in die eines Mitspielers gelegt wurde. Verdecke diese Karte.
+        //Der Server schickt eine Nachricht, dass die Karte in die Hand eines Mitspielers gelegt wurde. Verdecke diese Karte.
         this.room.onMessage(ClientMessage.CardDropOwnZone,(message) =>{
             this.cards.forEach(element => {
                 if(message.id == element.id && (element.gemeldet == false)){
@@ -535,13 +524,6 @@ export default class GaigelMode1v1 extends Phaser.Scene
             oldTrumpf.setTexture(oldTrumpf.cardback);
             
         })
-
-        this.room.onMessage(ClientMessage.updateAllCards,(message) =>{
-            this.cards.forEach(element => {
-                this.room.send(ClientMessage.CardMove,{card:element, id:element.id});
-           });
-        })
-
         this.room.onMessage(ClientMessage.setPos,(message) =>{
             console.log(message.pos);
             this.configurePos(message.pos);

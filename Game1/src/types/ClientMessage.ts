@@ -1,12 +1,10 @@
 export enum ClientMessage
 {
     CardMove,
-    CardFlip,
     UpdateDeckPosition,
     CardDropOwnZone,
     CardDropStichZone,
     CardUpdate,
-    RotateBoard,
     YourTurn,
     EndTurn,
     setTrumpfColor,
@@ -21,7 +19,6 @@ export enum ClientMessage
     youAreTheLoser,
     stealTrumpf,
     melden,
-    updateAllCards,
     setPos,
     farbZwang,
     updatePoints

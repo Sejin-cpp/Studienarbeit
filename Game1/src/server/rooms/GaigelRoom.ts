@@ -38,13 +38,13 @@ export class GaigelRoom extends Room<GaigelState> {
           except: client
       })
     });
-    //falls eine Karte geflippt wird, sendet der Server eine Nachricht an alle anderen Clients, um den Kartenflip zu synchronisieren
+    /*//falls eine Karte geflippt wird, sendet der Server eine Nachricht an alle anderen Clients, um den Kartenflip zu synchronisieren
     this.onMessage(ClientMessage.CardFlip, (client, message) => {
       this.state.flipCard(client.sessionId,message.id);
       this.broadcast(ClientMessage.CardFlip,message, {
         except: client
       })
-    });
+    });*/
 
     this.onMessage(ClientMessage.CardDropOwnZone, (client, message) => {
       this.state.addCardToPlayer(client.sessionId,message.id)

@@ -27,10 +27,6 @@ class CardState extends Schema
     this.hidden = true;
   }
 
-  getValue(){
-    return this.value;
-  }
-
   flip(){
     if(this.hidden){
       this.hidden = false;
