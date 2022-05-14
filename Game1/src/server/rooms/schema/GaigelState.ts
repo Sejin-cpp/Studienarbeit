@@ -204,18 +204,7 @@ export class GaigelState extends Schema
   setTrumpfColor(color : string){
     this.trumpfColor = color;
   }
-  //wenn die Karte umgedreht wird, wird dessen Status im Server aktualisiert
-  flipCard(playerid: string, cardid: number){
-    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
-    var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
-    if(cardIndex == -1){                             //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte nicht umgedreht
-      return false;
-    }
-    else{
-      this.playerstates[playerIndex].cardsInHand[cardIndex].flip();
-    }
-  }
-
+  
   //diese Methode fügt die Karte mit der übergebenen KartenID zu der Hand des Spielers mit der übergebenen SpielerID hinzu
   addCardToPlayer(playerid :string,cardid : number){
     var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
@@ -427,6 +416,18 @@ export class GaigelState extends Schema
       zaehler++;
     })
     return {WinnerTeam: winnerTeam}
+  }
+
+  //wenn die Karte umgedreht wird, wird dessen Status im Server aktualisiert
+  flipCard(playerid: string, cardid: number){
+    var playerIndex = this.playerstates.findIndex((playerstate) => playerstate.id == playerid);
+    var cardIndex =this.playerstates[playerIndex].cardsInHand.findIndex((cardstate) => cardstate.id == cardid);
+    if(cardIndex == -1){                             //falls die Karte sich nicht in der Hand des Spielers befindet, wird die Karte nicht umgedreht
+      return false;
+    }
+    else{
+      this.playerstates[playerIndex].cardsInHand[cardIndex].flip();
+    }
   }
 
   
