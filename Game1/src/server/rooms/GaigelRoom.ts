@@ -1,7 +1,10 @@
-import { Room, Client, updateLobby } from "colyseus"
+import { Room, Client, updateLobby, Delayed } from "colyseus"
 import { GaigelState } from "./schema/GaigelState"
 
+
 export class GaigelRoom extends Room<GaigelState> {
+  maxClients = 4;
+  
 
   onCreate (options: any) {
     this.setState(new GaigelState());
@@ -18,11 +21,20 @@ export class GaigelRoom extends Room<GaigelState> {
   }
 
   onJoin (client: Client, options: any) {
+    
     console.log(client.sessionId, "joined!");
+    
   }
 
-  onLeave (client: Client, consented: boolean) {
+  async onLeave (client: Client) {
     console.log(client.sessionId, "left!");
+    try {
+
+      // allow disconnected client to reconnect into this room until 1 seconds
+      await this.allowReconnection(client, 0.2);
+    } catch (e) {
+    }
+         
   }
 
   onDispose() {

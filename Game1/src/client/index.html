@@ -5,6 +5,53 @@
 
     <style>
       body { font-family: Tahoma, Geneva, sans-serif; }
+      html{
+        zoom: 175%;
+      }
+
+        /* Button*/
+      .button-27 {
+        appearance: none;
+        background-color: #000000;
+        border: 2px solid #1A1A1A;
+        border-radius: 15px;
+        box-sizing: border-box;
+        color: #FFFFFF;
+        cursor: pointer;
+        display: inline-block;
+        font-family: Roobert,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+        font-size: 16px;
+        font-weight: 600;
+        line-height: normal;
+        margin-bottom: 15px;
+        min-height: 60px;
+        min-width: 0;
+        max-width: 165px;
+        outline: none;
+        padding: 16px 24px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        width: 100%;
+        will-change: transform;
+      }
+
+      .button-27:disabled {
+        pointer-events: none;
+      }
+
+      .button-27:hover {
+        box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+        transform: translateY(-2px);
+      }
+
+      .button-27:active {
+        box-shadow: none;
+        transform: translateY(0);
+      }
     </style>
 
     <!-- colyseus.js client -->
@@ -12,31 +59,22 @@
 
   </head>
   <body>
-    <h1>
-      <a href="https://github.com/colyseus/colyseus-examples"><img src="https://cdn.jsdelivr.net/gh/colyseus/colyseus@master/media/header.png" height="100" alt="colyseus" /></a>
-    </h1>
-
-    <p>This example shows how to use <code>LobbyRoom</code>:</p>
-    <ul>
-        <li>When you join a lobby, you'll receive the current list of rooms</li>
-        <li>Then, you'll receive updates when rooms are created, updated, or removed.</li>
-        <li>(All rooms on colyseus-examples have <code>.enableRealtimeListing()</code>, try joining other demos to see realtime updates here)</li>
-        <li><a href="https://docs.colyseus.io/builtin-rooms/lobby/">See documentation</a></li>
-    </ul>
-
-    <p>Open Developer Tools for log messages.</p>
-
-    <p><strong>Commands</strong></p>
-
-    <button onclick="join()">join lobby</button>
-    <button onclick="leave()">leave lobby</button>
+    
+    <h2>Create:</h2>
+    <button class="button-27" onclick="window.location.href = 'waitingRoom_2.html';">1vs1</button>
+    <button class="button-27" onclick="window.location.href = 'waitingRoom_4.html';">2vs2</button>
 
     <h2>All rooms:</h2>
-    <ul id="all_rooms"></ul>
+    <style type="text/css">
+      .container { border:2px solid #ccc; width:330px; height: 400px; overflow-y: scroll; }
+     </style>
+   
+  <div id="Roomlist" class="container"></div>
+  
 
     <script>
-      var host = window.document.location.host.replace(/:.*/, '');
-      var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':' + location.port : ''));
+      var client = new Colyseus.Client('ws://localhost:2567');
+      window.onload = join();
       var lobby;
 
       function join () {
@@ -85,6 +123,31 @@
           });
       }
 
+
+
+      function update_full_list() {
+        var roomList = document.getElementById('Roomlist');
+        //remove 
+        while (roomList.firstChild) {
+          roomList.removeChild(roomList.lastChild);
+        }
+        allRooms.map(function(room) {
+          var p = document.createElement("p");
+          p.innerText = "RoomID: "+room.roomId+" Players: "+room.clients+"/"+room.maxClients+" ";
+          var button = document.createElement("button");
+          if(room.maxClients == 4){
+            button.setAttribute("onclick","window.location.href = 'waitingRoom_4.html?rID="+room.roomId+"';");
+          }
+          if(room.maxClients == 2){
+            button.setAttribute("onclick","window.location.href = 'waitingRoom_2.html?rID="+room.roomId+"';");
+          }
+          button.innerHTML = "Join";
+          p.appendChild(button);
+          roomList.appendChild(p);          
+        }).join("\n");
+
+      }
+      /**
       function update_full_list() {
         var el = document.getElementById('all_rooms');
         el.innerHTML = allRooms.map(function(room) {
@@ -92,7 +155,7 @@
         }).join("\n");
 
       }
-
+      */
       function leave() {
         if (lobby) {
           lobby.leave();

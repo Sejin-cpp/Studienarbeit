@@ -1,7 +1,6 @@
 import Arena from "@colyseus/arena";
 import { monitor } from "@colyseus/monitor";
 import path from 'path';
-import serveIndex from 'serve-index';
 import express from 'express';
 
 
@@ -9,6 +8,8 @@ import express from 'express';
  * Import your Room files
  */
 import { LobbyRoom } from 'colyseus';
+import { WaitingRoom_2 } from "./rooms/WaitingRoom_2";
+import { WaitingRoom_4 } from "./rooms/WaitingRoom_4";
 import { GaigelRoom } from "./rooms/GaigelRoom";
 
 
@@ -22,6 +23,12 @@ export default Arena({
         gameServer
             .define("lobby", LobbyRoom);
         gameServer
+            .define("waitingRoom_2", WaitingRoom_2)
+            .enableRealtimeListing();
+        gameServer
+            .define("waitingRoom_4", WaitingRoom_4)
+            .enableRealtimeListing();
+        gameServer
             .define("my_room", GaigelRoom)
             .enableRealtimeListing();
         gameServer
@@ -32,7 +39,7 @@ export default Arena({
     },
 
     initializeExpress: (app) => {
-        app.use('/', serveIndex(path.join(__dirname, "static"), {'icons': true}))
+        
         app.use('/', express.static(path.join(__dirname, "static")));
         /**
          * Bind your custom express routes here:
