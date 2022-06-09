@@ -340,9 +340,15 @@ export class GaigelState extends Schema
       }
     }
     //Ansonsten gewinnt der Spieler mit der höchsten Karte. Bei Trumpffarben gewinnt der Spieler mit der höchsten Karte mit Trumpffarbe
-    else{
-      if(this.lookForTrumpfColor() == false){
-        this.possibleWinners = this.playerstates;
+    else{         
+      if(this.lookForColor(this.trumpfColor) == false){         //sortiere die möglichen Gewinner nach ihrere Farbe aus. Zuerst wird nach Trumpffarbe geschaut, danach nach den anderen Farben in absteigender Reihenfolge ihrer Wertigkeit (Eichel > Blatt > Herz > Schellen)
+        if(this.lookForColor("eichel") == false){
+          if(this.lookForColor("blatt") == false){
+            if(this.lookForColor("herz") == false){
+              this.lookForColor("schellen");
+            }
+          }
+        }
       }
       this.possibleWinners.forEach(player => {
         if(tempValue < player.cardInStich.value){
@@ -379,18 +385,18 @@ export class GaigelState extends Schema
     
   }
 
-  lookForTrumpfColor(){
-    var trumpfFound = false;
+  lookForColor(cardColor : string){       //diese Methode sortiert die Karten im Stich aus nach ihrer übergebenen Farbe. Falls min. eine Karte im aktuellen Stich die Farbe hatte, gibt die Methode ein true zurück
+    var colorFound = false;
     this.playerstates.forEach(player => {
-      if (player.cardInStich.color == this.trumpfColor){
+      if (player.cardInStich.color == cardColor){
         this.possibleWinners.push(player)
-        trumpfFound = true;
+        colorFound = true;
       }
     })
-    return trumpfFound;
+    return colorFound;
   }
 
-  testIfEndGame(){
+  testIfEndGame(){                    //diese Methode überprüft ob das Spiel beendet werden muss. Es wird auch überprüft ob der Talon aufgebraucht wurde und es Farbzwang gibt
     var endGame = false;
     var farbZwang = false;
     if (this.cardsInDeck.length == 0){
