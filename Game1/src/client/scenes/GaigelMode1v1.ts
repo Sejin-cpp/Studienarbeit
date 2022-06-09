@@ -348,7 +348,7 @@ export default class GaigelMode1v1 extends Phaser.Scene
         })
         //Beim der Spieleröffnung wird die Art der Spieleröffnung als Text erstellt, um alle Spieler zu informieren
         this.room.onMessage(ClientMessage.secondTurn,(message) =>{
-            console.log("info");
+            this.firstTurn = true;
             this.text = this.add.text(this.centerX-50,this.gameHeight-280,message,{ font: "30px Arial", color: '0x000000' });
         })
 
