@@ -150,6 +150,7 @@
 
           //Other players join the gameRoom
           room.onMessage("gameRoomIdForOthers", function(message) {
+            room.leave();
             sleep(2000)
             var url = "Game1vs1.html?rID=" + message;
             location.href = url; 
