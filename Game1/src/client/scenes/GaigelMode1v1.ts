@@ -111,8 +111,14 @@ export default class GaigelMode1v1 extends Phaser.Scene
             }
             else
             {
+                try{
                 this.room = await this.client.joinById(roomID)
                 console.log("joined successfully", this.room);
+                }
+                catch(e)
+                {
+                    window.location.reload();
+                }
             }            
                    
         } catch (e) {

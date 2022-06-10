@@ -273,7 +273,7 @@ export class GaigelRoom extends Room<GaigelState> {
     try {
 
       // allow disconnected client to reconnect into this room until 1 seconds
-      await this.allowReconnection(client, 0.2);
+      await this.allowReconnection(client, 2);
     } catch (e) {
     }
     

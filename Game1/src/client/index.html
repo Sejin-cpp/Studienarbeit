@@ -135,17 +135,26 @@
           roomList.removeChild(roomList.lastChild);
         }
         allRooms.map(function(room) {
-          var p = document.createElement("p");
-          p.innerText = "RoomID: "+room.roomId+" Players: "+room.clients+"/"+room.maxClients+" ";
-          var button = document.createElement("button");
-          if(room.maxClients == 4){
-            button.setAttribute("onclick","window.location.href = 'waitingRoom_4.html?rID="+room.roomId+"';");
-          }
-          if(room.maxClients == 2){
-            button.setAttribute("onclick","window.location.href = 'waitingRoom_2.html?rID="+room.roomId+"';");
-          }
-          button.innerHTML = "Join";
-          p.appendChild(button);
+        	var p = document.createElement("p");
+          	p.innerText = "RoomID: "+room.roomId+" Players: "+room.clients+"/"+room.maxClients+" ";
+
+		  	if(room.name == "my_room" || room.name == "my_room2")
+		  	{
+				p.innerText = "RoomID: "+room.roomId+" Players: "+room.clients+"/"+room.maxClients+" In Game ";
+		  	}
+		  	else{
+				var button = document.createElement("button");
+				if(room.maxClients == 4){
+					button.setAttribute("onclick","window.location.href = 'waitingRoom_4.html?rID="+room.roomId+"';");
+				}
+				if(room.maxClients == 2){
+					button.setAttribute("onclick","window.location.href = 'waitingRoom_2.html?rID="+room.roomId+"';");
+				}
+				button.innerHTML = "Join";
+				p.appendChild(button);				
+		  	}
+          
+
           roomList.appendChild(p);          
         }).join("\n");
 
