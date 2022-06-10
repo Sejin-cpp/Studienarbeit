@@ -1,4 +1,4 @@
-import CardZone from "./Cardzone"
+import CardZone from "./CardZone"
 export default class PlayerZone extends CardZone {
     xPos;
     yPos;
