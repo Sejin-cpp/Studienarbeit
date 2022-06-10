@@ -25,10 +25,24 @@
     </form>
 
     <div class="container" id="messages"></div>
-    
+    <input type="text" value="" id="invitelink">
+    <button onclick="copyLink()">Einladungslink kopieren</button>
 
 
     <script>
+
+      function copyLink() {
+        /* Get the text field */
+        var copyText = document.getElementById("invitelink");
+
+        /* Select the text field */
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+        /* Copy the text inside the text field */
+        navigator.clipboard.writeText(copyText.value);
+      }
+
       var client = new Colyseus.Client('ws://localhost:2567');
 
       const queryString = window.location.search;
@@ -60,6 +74,8 @@
           //listen to roomId coming from the server
           room.onMessage("roomId", function(message) {
               document.getElementById("roomId").innerHTML = message;
+              var invitelink = document.getElementById("invitelink");
+              invitelink.value = "http://localhost:8000/waitingRoom_4.html?rID="+message;
           });
 
           //Player 1 getting message to join GameRoom, after that he sends the gameRoomId to the other clients
@@ -135,6 +151,8 @@
           //listen to roomId coming from the server
           room.onMessage("roomId", function(message) {
               document.getElementById("roomId").innerHTML = message;
+              var invitelink = document.getElementById("invitelink");
+              invitelink.value = "http://localhost:8000/waitingRoom_4.html?rID="+message;
           });
 
           //Player 1 getting message to join GameRoom, after that he sends the gameRoomId to the other clients
