@@ -76,7 +76,7 @@
 
           //Other players join the gameRoom
           room.onMessage("gameRoomIdForOthers", function(message) {
-            sleep(500)
+            sleep(2000)
             var url = "Game2vs2.html?rID=" + message;
             location.href = url; 
           });

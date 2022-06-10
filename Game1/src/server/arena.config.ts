@@ -26,9 +26,11 @@ export default Arena({
           .define("waitingRoom_4", WaitingRoom_4)
           .enableRealtimeListing();
         gameServer
-          .define("my_room", GaigelRoom, {playerCount: 2})     
+          .define("my_room", GaigelRoom, {playerCount: 2}) 
+          .enableRealtimeListing();    
         gameServer
           .define("my_room2", GaigelRoom, {playerCount: 4})
+          .enableRealtimeListing();
         gameServer
           .onShutdown(function(){
               console.log(`game server is going down.`);
