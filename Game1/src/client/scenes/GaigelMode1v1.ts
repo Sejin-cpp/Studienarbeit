@@ -101,9 +101,26 @@ export default class GaigelMode1v1 extends Phaser.Scene
 
     async create()
     {
-       
-       //this.input.mouse.disableContextMenu();
-       this.room = await this.client.joinOrCreate<GaigelState>('my_room');
+        try {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const roomID = urlParams.get('rID')  
+            if(roomID == null)
+            {
+                location.href = "index.html"; 
+            }
+            else
+            {
+                this.room = await this.client.joinById(roomID)
+                console.log("joined successfully", this.room);
+            }            
+                   
+        } catch (e) {
+            console.error("join error", e);
+        }
+
+       this.input.mouse.disableContextMenu();
+       //this.room = await this.client.joinOrCreate<GaigelState>('my_room');
        this.background = this.add.sprite(0,0,'background');
        this.background.scale = 2;
        this.background.depth = 0;

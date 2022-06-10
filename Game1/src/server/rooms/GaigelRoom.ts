@@ -15,6 +15,7 @@ export class GaigelRoom extends Room<GaigelState> {
     this.setState(new GaigelState());
     console.log(options);
     this.maxPlayer = options.playerCount;
+    this.maxClients = options.playerCount;
     //wenn der Eröffnungsspieler sich entscheidet auf Dissle zu spielen, wird dieser Spieler gespeichert
     this.onMessage(ClientMessage.AufDissle, (client, message) => {
       console.log("AufDissle");
@@ -38,13 +39,6 @@ export class GaigelRoom extends Room<GaigelState> {
           except: client
       })
     });
-    /*//falls eine Karte geflippt wird, sendet der Server eine Nachricht an alle anderen Clients, um den Kartenflip zu synchronisieren
-    this.onMessage(ClientMessage.CardFlip, (client, message) => {
-      this.state.flipCard(client.sessionId,message.id);
-      this.broadcast(ClientMessage.CardFlip,message, {
-        except: client
-      })
-    });*/
 
     this.onMessage(ClientMessage.CardDropOwnZone, (client, message) => {
       this.state.addCardToPlayer(client.sessionId,message.id)
@@ -240,10 +234,10 @@ export class GaigelRoom extends Room<GaigelState> {
       }
       this.clients[this.turnCounter].send(ClientMessage.setTrumpfColor);             //setze Trumpffarbe
     }
-    console.log(client.sessionId, "joined!")
+    console.log(client.sessionId, "GaigelRoom joined!")
   }
 
-  onLeave (client: Client, consented: boolean) {
+  async onLeave (client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
     var clientIndex = this.team1.findIndex((clientT) => clientT == client);
     if(clientIndex == -1){
@@ -274,6 +268,13 @@ export class GaigelRoom extends Room<GaigelState> {
         })
         console.log("Team2 wins");
       }
+    }
+
+    try {
+
+      // allow disconnected client to reconnect into this room until 1 seconds
+      await this.allowReconnection(client, 0.2);
+    } catch (e) {
     }
     
   }

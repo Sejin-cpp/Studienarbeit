@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+
+    <style>
+      body { font-family: Tahoma, Geneva, sans-serif; }
+    </style>
+    <style type="text/css">
+      .container { border:2px solid #ccc; width:400px; height: 400px; overflow-y: scroll; }
+     </style>
+
+    <!-- colyseus.js client -->
+    <script type="text/javascript" src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
+
+  </head>
+  <body>
+    <strong>RoomID: </strong>
+    <p id="roomId"></p><br>
+    <strong>Messages</strong><br>
+
+    <form id="form">
+      <input type="text" id="input" value="" autofocus/>
+      <input type="submit" value="send" />
+    </form>
+
+    <div class="container" id="messages"></div>
+    
+
+
+    <script>
+      var client = new Colyseus.Client('ws://localhost:2567');
+
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const roomID = urlParams.get('rID')  
+      if(roomID == null){
+        client.create("waitingRoom_4").then(room => {
+          console.log("joined");     
+          room.onStateChange.once(function(state) {
+              console.log("initial room state:", state);
+          });
+
+          // new room state
+          room.onStateChange(function(state) {
+              // this signal is triggered on each patch
+          });
+
+          // listen to patches coming from the server
+          room.onMessage("messages", function(message) {
+              var p = document.createElement("p");
+              p.innerText = message;
+              document.querySelector("#messages").appendChild(p);
+
+              //auto scroll down
+              var objDiv = document.getElementById("messages");
+              objDiv.scrollTop = objDiv.scrollHeight;
+          });
+
+          //listen to roomId coming from the server
+          room.onMessage("roomId", function(message) {
+              document.getElementById("roomId").innerHTML = message;
+          });
+
+          //Player 1 getting message to join GameRoom, after that he sends the gameRoomId to the other clients
+          room.onMessage("joinRoom", function(message) {
+            client.create("my_room2").then(gameRoom => {
+            console.log("joined successfully", gameRoom);
+            room.send("gameRoomId", gameRoom.id);
+            var url = "Game2vs2.html?rID=" + gameRoom.id;
+            location.href = url;
+            }).catch(e => {
+            console.error("join error", e);
+            });
+          });
+
+          //Other players join the gameRoom
+          room.onMessage("gameRoomIdForOthers", function(message) {
+            sleep(500)
+            var url = "Game2vs2.html?rID=" + message;
+            location.href = url; 
+          });
+
+          function sleep(milliseconds) {
+          var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+              if ((new Date().getTime() - start) > milliseconds){
+                break;
+              }
+            }
+          }  
+
+
+
+          // send message to room on submit
+          document.querySelector("#form").onsubmit = function(e) {
+            e.preventDefault();
+
+            var input = document.querySelector("#input");
+
+            console.log("input:", input.value);
+
+            // send data to room
+            room.send("message", input.value);
+
+            // clear input
+            input.value = "";
+          }
+        });
+      }
+      else{
+        client.joinById(roomID).then(room => {
+          console.log("joined");     
+          room.onStateChange.once(function(state) {
+              console.log("initial room state:", state);
+          });
+
+          // new room state
+          room.onStateChange(function(state) {
+              // this signal is triggered on each patch
+          });
+
+          // listen to patches coming from the server
+          room.onMessage("messages", function(message) {
+              var p = document.createElement("p");
+              p.innerText = message;
+              document.querySelector("#messages").appendChild(p);
+
+              //auto scroll down
+              var objDiv = document.getElementById("messages");
+              objDiv.scrollTop = objDiv.scrollHeight;
+          });
+
+          //listen to roomId coming from the server
+          room.onMessage("roomId", function(message) {
+              document.getElementById("roomId").innerHTML = message;
+          });
+
+          //Player 1 getting message to join GameRoom, after that he sends the gameRoomId to the other clients
+          room.onMessage("joinRoom", function(message) {
+            client.create("my_room").then(gameRoom => {
+            console.log("joined successfully", gameRoom);
+            room.send("gameRoomId", gameRoom.id);
+            var url = "Game2vs2.html?rID=" + gameRoom.id;
+            location.href = url;
+            }).catch(e => {
+            console.error("join error", e);
+            });
+          });
+
+          //Other players join the gameRoom
+          room.onMessage("gameRoomIdForOthers", function(message) {
+            sleep(500)
+            var url = "Game2vs2.html?rID=" + message;
+            location.href = url; 
+          });
+
+          function sleep(milliseconds) {
+          var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+              if ((new Date().getTime() - start) > milliseconds){
+                break;
+              }
+            }
+          }  
+
+
+
+          // send message to room on submit
+          document.querySelector("#form").onsubmit = function(e) {
+            e.preventDefault();
+
+            var input = document.querySelector("#input");
+
+            console.log("input:", input.value);
+
+            // send data to room
+            room.send("message", input.value);
+
+            // clear input
+            input.value = "";
+          }
+        }); 
+      }
+    </script>
+  </body>
+</html>
