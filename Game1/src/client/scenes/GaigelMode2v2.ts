@@ -454,6 +454,9 @@ export default class GaigelMode2v2 extends Phaser.Scene
             if(this.turnInfoText){
                 this.turnInfoText.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
             }
+            if(this.text){
+                this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            }
             this.firstTurn = false;
             this.firstCardSet = false;
             this.destroyAllMeldeButtons();

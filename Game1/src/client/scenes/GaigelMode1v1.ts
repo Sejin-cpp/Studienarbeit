@@ -432,6 +432,9 @@ export default class GaigelMode1v1 extends Phaser.Scene
             this.cards.forEach(element => {
                 element.setDraggAble(false);
             })
+            if(this.text){
+                this.text.destroy();                   //entfernt den Text, welche den über die Spieleröffnung informiert hat
+            }
         })
         //legt die erste Karte als Trumpfkarte fest
         this.room.onMessage(ClientMessage.setTrumpfColor,(message) => {
