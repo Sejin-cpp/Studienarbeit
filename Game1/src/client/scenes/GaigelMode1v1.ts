@@ -3,8 +3,8 @@ import * as Colyseus from 'colyseus.js'
 import { GaigelState } from '../../server/rooms/schema/GaigelState'
 import CardDraggable from '../../gameObjects/CardDraggable'
 import {ClientMessage} from '../../types/ClientMessage'
-import CardZone from '../../gameObjects/Cardzone'
-import PlayerZone from '../../gameObjects/Playerzone'
+import CardZone from '../../gameObjects/CardZone'
+import PlayerZone from '../../gameObjects/PlayerZone'
 import Button from '../../gameObjects/Button'
 
 export default class GaigelMode1v1 extends Phaser.Scene
